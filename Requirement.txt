@@ -1,0 +1,23 @@
+Dear Jinnawat,
+
+Congratulations on progressing to the next round of interviews for the Mission Engineer position at dData! You are invited to complete a technical exercise and presentation based on a real-world scenario. In this challenge, you’ll design a solution for dBank, Thailand’s largest virtual bank, focusing on building an AI-powered system that:
+Answers natural-language questions using company data and documentation.
+Runs safe, parameterized SQL/KPI queries via MCP tools.
+Please refer to the attached document for full details, including architecture scope, data requirements, and submission guidelines.
+
+Presentation
+Date: To be updated after exercise submission
+Duration: 45 minutes for presentation + 15 minutes Q&A
+Include:
+Overview of your architecture and data flow
+Live demonstration of your solution
+Submission
+Deadline: Within 5 days of receiving this email (on April 7, 2025 within 20.00 PM)
+Format: GitHub link or zipped project folder
+Contact: joey@data.co.th
+
+We look forward to seeing your creativity and technical problem-solving in action.
+
+Think Big. Build Smart. Have Fun!
+
+Best regards,
