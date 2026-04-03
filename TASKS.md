@@ -58,12 +58,12 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
 
 ## Day 3: UI & DevOps
 
-- [ ] **Task 3.1: Streamlit UI**
-  - [ ] Create `frontend/app.py`.
-  - [ ] Implement `st.chat_message` loop for user/assistant conversation.
+- [ ] **Task 3.1: Next.js UI**
+  - [ ] Initialize Next.js project in `frontend/`.
+  - [ ] Implement a chat interface component for user/assistant conversation.
   - [ ] Connect UI to `http://backend:8000/ask`.
-  - [ ] Display an `st.expander("🛠️ Tool Logs")` showing which MCP tools were used.
-  - *DoD: You can chat with the AI through the browser on `localhost:8501`.*
+  - [ ] Display an expandable section for "🛠️ Tool Logs" showing which MCP tools were used.
+  - *DoD: You can chat with the AI through the browser on `localhost:3000`.*
 
 - [ ] **Task 3.2: Dockerization**
   - [ ] Write `Dockerfile` for backend.

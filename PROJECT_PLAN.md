@@ -48,10 +48,10 @@ This plan provides a strict, day-by-day roadmap to implement the "Deep Insights 
 ## Day 3: Frontend UI, DevOps, & Presentation Prep
 **Goal:** Make it presentable, robust, and prepare for the interview.
 
-* **Morning (09:00 - 12:00): Streamlit UI**
-  * Build a simple Streamlit application.
-  * Implement a chat interface.
-  * Add a sidebar or expander to display "Tool Execution Logs" (this visually proves to interviewers that the MCP tools are working securely).
+* **Morning (09:00 - 12:00): Next.js UI**
+  * Initialize a Next.js application (e.g., using `create-next-app`).
+  * Implement a chat interface to interact with the backend.
+  * Add a sidebar or expandable section to display "Tool Execution Logs" (this visually proves to interviewers that the MCP tools are working securely).
 
 * **Afternoon (13:00 - 16:00): DevOps & Refinement**
   * Finalize `docker-compose.yml` to spin up the UI, API, MCP, and DB simultaneously.

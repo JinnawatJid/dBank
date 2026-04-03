@@ -13,7 +13,7 @@ The proposed tech stack is highly relevant and aligns exceptionally well with mo
 | **Data Transformation** | dbt (data build tool) | **Industry Standard.** dbt is the absolute gold standard for analytics engineering. Using it demonstrates a mature approach to data modeling, testing, and version control. |
 | **Backend API** | FastAPI | **Industry Standard.** FastAPI is the modern standard for Python web services, favored for its speed, async capabilities, and automatic OpenAPI documentation. |
 | **Tool Calling / Integration** | MCP (Model Context Protocol) | **Forward-Looking.** MCP is relatively new (introduced by Anthropic) but is rapidly becoming the standard for standardizing tool execution for LLMs. Using it shows you are up-to-date with bleeding-edge AI integration patterns. |
-| **Frontend UI** | Streamlit | **Acceptable (for internal/demo).** While a production customer-facing bank app would use React or Next.js, Streamlit is the standard for rapidly prototyping internal AI tools and dashboards. It is perfect for an interview deliverable. |
+| **Frontend UI** | Next.js | **Industry Standard.** Next.js is the premier React framework for building robust, production-ready frontend applications. Choosing this demonstrates strong full-stack capability and aligns with enterprise architectural patterns. |
 | **Containerization** | Docker Compose | **Standard (for local dev).** Perfect for the 5-day scope. In an actual bank, this would be deployed to Kubernetes (EKS/GKE), but proving containerization via Docker is the necessary first step. |
 | **LLM** | Google AI Studio | **Solid Choice.** Enterprise-grade model. |
 
