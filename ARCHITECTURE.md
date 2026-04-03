@@ -13,7 +13,7 @@ The architecture strictly adheres to the **Model Context Protocol (MCP)** to ens
 ```mermaid
 graph TD
     %% User and UI
-    User([Operations Support]) --> UI[Streamlit UI]
+    User([Operations Support]) --> UI[Next.js UI]
 
     %% API & Orchestration
     UI -- "/ask (JSON)" --> FastAPI[FastAPI Backend\nRAG Orchestrator]
@@ -86,7 +86,7 @@ graph TD
 ```mermaid
 sequenceDiagram
     actor User
-    participant UI as Streamlit UI
+    participant UI as Next.js UI
     participant API as FastAPI
     participant LLM as Google AI Studio
     participant MCP as MCP Server

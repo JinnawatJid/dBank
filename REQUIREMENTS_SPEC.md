@@ -43,7 +43,7 @@
   3. `kpi.top_root_causes`: An aggregation helper tool to compute specific metrics.
 
 ### 3.5 User Interface (UI)
-- **Platform:** Provide a thin UI (Streamlit) for Operations Support to input questions and view answers + tool invocation logs.
+- **Platform:** Provide a UI built with Next.js for Operations Support to input questions and view answers + tool invocation logs.
 
 ---
 
