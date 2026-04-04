@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: raw
+    database: dbank_analytics
+    schema: raw
+    tables:
+      - name: customers
+      - name: products
+      - name: tickets
+      - name: logins
