@@ -6,7 +6,7 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
 
 - [ ] **Task 1.1: Environment Setup**
   - [ ] Write `docker-compose.yml` defining a PostgreSQL service using the `pgvector/pgvector:pg15` image.
-  - [ ] Write a `requirements.txt` with base dependencies (fastapi, streamlit, dbt-postgres, sqlalchemy, google-generativeai, etc).
+  - [ ] Write a `requirements.txt` with base dependencies (fastapi, dbt-postgres, sqlalchemy, google-generativeai, etc).
   - *DoD: `docker-compose up -d db` runs successfully.*
 
 - [ ] **Task 1.2: Mock Data Generation**
