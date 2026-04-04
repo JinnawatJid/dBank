@@ -1,0 +1,8 @@
+fastapi==0.109.2
+uvicorn==0.27.1
+sqlalchemy==2.0.25
+dbt-postgres==1.7.9
+psycopg2-binary==2.9.9
+google-generativeai==0.3.2
+pydantic==2.6.1
+faker==22.5.1
