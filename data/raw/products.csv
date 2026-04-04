@@ -1,0 +1,11 @@
+product_id,product_name,product_type,launch_date
+PROD-001,"Pena, Reyes and Obrien Savings Account",Savings Account,2023-07-03
+PROD-002,Ochoa-Mcgee Checking Account,Checking Account,2018-02-02
+PROD-003,Berry PLC Loan,Loan,2025-01-17
+PROD-004,Velasquez Inc Savings Account,Savings Account,2016-04-07
+PROD-005,Reyes-Young Loan,Loan,2022-11-13
+PROD-006,Garcia-Williams Investment,Investment,2019-09-28
+PROD-007,Washington Group Credit Card,Credit Card,2017-10-29
+PROD-008,Freeman-Spencer Investment,Investment,2021-08-24
+PROD-009,Brown PLC Credit Card,Credit Card,2020-07-08
+PROD-010,"Peters, Cardenas and Gonzalez Loan",Loan,2017-04-26

@@ -4,15 +4,15 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
 
 ## Day 1: Data & Infrastructure
 
-- [ ] **Task 1.1: Environment Setup**
-  - [ ] Write `docker-compose.yml` defining a PostgreSQL service using the `pgvector/pgvector:pg15` image.
-  - [ ] Write a `requirements.txt` with base dependencies (fastapi, dbt-postgres, sqlalchemy, google-generativeai, etc).
+- [x] **Task 1.1: Environment Setup**
+  - [x] Write `docker-compose.yml` defining a PostgreSQL service using the `pgvector/pgvector:pg15` image.
+  - [x] Write a `requirements.txt` with base dependencies (fastapi, dbt-postgres, sqlalchemy, google-generativeai, etc).
   - *DoD: `docker-compose up -d db` runs successfully.*
 
-- [ ] **Task 1.2: Mock Data Generation**
-  - [ ] Write `scripts/generate_mock_data.py`.
-  - [ ] Generate 4 CSVs: `customers.csv`, `tickets.csv`, `logins.csv`, `products.csv`.
-  - [ ] Write a script or use `psql` to load these CSVs into the `raw` schema.
+- [x] **Task 1.2: Mock Data Generation**
+  - [x] Write `scripts/generate_mock_data.py`.
+  - [x] Generate 4 CSVs: `customers.csv`, `tickets.csv`, `logins.csv`, `products.csv`.
+  - [x] Write a script or use `psql` to load these CSVs into the `raw` schema.
   - *DoD: Data is queryable in PostgreSQL under the `raw` schema.*
 
 - [ ] **Task 1.3: dbt Data Modeling**
