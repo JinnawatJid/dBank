@@ -10,7 +10,7 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
   - *DoD: `docker-compose up -d db` runs successfully.*
 
 - [x] **Task 1.2: Mock Data Generation**
-  - [x] Write `scripts/generate_mock_data.py`.
+  - [x] Write `scripts/generate_mock_data.py` (with timezone-aware TIMESTAMPTZ, audit `_ingested_at` columns, and Least Privilege access control).
   - [x] Generate 4 CSVs: `customers.csv`, `tickets.csv`, `logins.csv`, `products.csv`.
   - [x] Write a script or use `psql` to load these CSVs into the `raw` schema.
   - *DoD: Data is queryable in PostgreSQL under the `raw` schema.*

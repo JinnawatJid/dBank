@@ -64,7 +64,8 @@ def generate_tickets():
         writer = csv.writer(f)
         writer.writerow(['ticket_id', 'customer_id', 'product_id', 'issue_type', 'status', 'priority', 'created_at', 'resolved_at'])
         for i in range(1, NUM_TICKETS + 1):
-            created_at = fake.date_time_between(start_date='-1y', end_date='now')
+            import datetime
+            created_at = fake.date_time_between(start_date='-1y', end_date='now', tzinfo=datetime.timezone.utc)
             status = random.choices(statuses, weights=[0.1, 0.1, 0.3, 0.5])[0]
             resolved_at = ''
             if status in ['Resolved', 'Closed']:
@@ -89,10 +90,11 @@ def generate_logins():
         writer = csv.writer(f)
         writer.writerow(['login_id', 'customer_id', 'login_timestamp', 'ip_address', 'device_type', 'status'])
         for i in range(1, NUM_LOGINS + 1):
+            import datetime
             writer.writerow([
                 f"LOG-{i:07d}",
                 f"CUST-{random.randint(1, NUM_CUSTOMERS):05d}",
-                fake.date_time_between(start_date='-1y', end_date='now').isoformat(),
+                fake.date_time_between(start_date='-1y', end_date='now', tzinfo=datetime.timezone.utc).isoformat(),
                 fake.ipv4(),
                 random.choice(device_types),
                 random.choices(statuses, weights=[0.9, 0.1])[0]
@@ -134,7 +136,8 @@ def load_data_to_db():
                 phone VARCHAR(50),
                 date_of_birth DATE,
                 join_date DATE,
-                customer_segment VARCHAR(50)
+                customer_segment VARCHAR(50),
+                _ingested_at TIMESTAMPTZ DEFAULT NOW()
             );
         """)
 
@@ -144,7 +147,8 @@ def load_data_to_db():
                 product_id VARCHAR(50) PRIMARY KEY,
                 product_name VARCHAR(255),
                 product_type VARCHAR(100),
-                launch_date DATE
+                launch_date DATE,
+                _ingested_at TIMESTAMPTZ DEFAULT NOW()
             );
         """)
 
@@ -157,8 +161,9 @@ def load_data_to_db():
                 issue_type VARCHAR(100),
                 status VARCHAR(50),
                 priority VARCHAR(50),
-                created_at TIMESTAMP,
-                resolved_at TIMESTAMP
+                created_at TIMESTAMPTZ,
+                resolved_at TIMESTAMPTZ,
+                _ingested_at TIMESTAMPTZ DEFAULT NOW()
             );
         """)
 
@@ -167,10 +172,11 @@ def load_data_to_db():
             CREATE TABLE raw.logins (
                 login_id VARCHAR(50) PRIMARY KEY,
                 customer_id VARCHAR(50),
-                login_timestamp TIMESTAMP,
+                login_timestamp TIMESTAMPTZ,
                 ip_address VARCHAR(50),
                 device_type VARCHAR(50),
-                status VARCHAR(50)
+                status VARCHAR(50),
+                _ingested_at TIMESTAMPTZ DEFAULT NOW()
             );
         """)
 
@@ -184,11 +190,36 @@ def load_data_to_db():
 
         for filepath, table in files_to_load:
             print(f"Loading {filepath} into {table}...")
+            # We need to specify the columns we are loading into because we added _ingested_at
+            # to the schema, but it is not in the CSV files.
+            # First, read the header from the CSV file to get the column names.
             with open(filepath, 'r') as f:
+                header = f.readline().strip()
+                columns = header.split(',')
+                # rewind the file
+                f.seek(0)
                 # Use COPY expert to handle CSV with header
-                cur.copy_expert(f"COPY {table} FROM STDIN WITH (FORMAT CSV, HEADER)", f)
+                cur.copy_expert(f"COPY {table} ({','.join(columns)}) FROM STDIN WITH (FORMAT CSV, HEADER)", f)
 
         print("Data loaded successfully.")
+
+        # Grant least privilege access to the read-only user
+        try:
+            readonly_user = os.getenv("READONLY_USER", "dbank_readonly")
+
+            # Check if user exists before attempting grants
+            cur.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (readonly_user,))
+            if cur.fetchone():
+                print(f"Granting read-only access to user {readonly_user}...")
+                cur.execute(f"GRANT USAGE ON SCHEMA raw TO {readonly_user};")
+                cur.execute(f"GRANT SELECT ON ALL TABLES IN SCHEMA raw TO {readonly_user};")
+                # Also ensure future tables get these permissions (though not strictly necessary for this static setup)
+                cur.execute(f"ALTER DEFAULT PRIVILEGES IN SCHEMA raw GRANT SELECT ON TABLES TO {readonly_user};")
+                print("Permissions granted.")
+            else:
+                print(f"Warning: User {readonly_user} not found. Skipping permission grants.")
+        except Exception as perm_error:
+            print(f"Warning: Could not grant permissions: {perm_error}")
 
         # Verify
         cur.execute("SELECT count(*) FROM raw.customers;")
