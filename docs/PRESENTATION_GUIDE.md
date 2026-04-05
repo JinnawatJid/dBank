@@ -25,14 +25,22 @@ You have 45 minutes to present your solution, followed by a 15-minute Q&A. The g
 - *Insert the architecture diagram from `ARCHITECTURE.md` here.*
 - Explain the flow: User -> UI -> Orchestrator (FastAPI) -> LLM -> MCP Tools -> Database.
 
+### Slide 4.5: Migration to Supabase (Production Readiness)
+- *Key Talking Point:* While this local environment uses standard Dockerized PostgreSQL to fulfill the specific sprint requirements, the architecture, dbt models, and pgvector schemas are designed to be **100% compatible with Supabase**.
+- In a production setting (like dMASTER), we would simply swap the local database connection string with a Supabase database URL. This instantly grants cloud scalability, managed backups, built-in edge functions, and seamless `pgvector` support without changing our core code or data models.
+
 ### Slide 5: The Data Layer (Engineering Focus)
 - Talk about the **Star Schema**. Why did you choose it? (Because LLMs write better SQL against clean dimensional models than messy raw data).
 - Mention **dbt**. Emphasize that testing data before the AI sees it prevents hallucinations.
 
 ### Slide 6: Security & Guardrails (The "Deployment-Grade" Slide)
-- **PII Masking:** How you ensured sensitive data doesn't leak into the LLM context.
-- **Read-Only execution:** Explain that the `sql.query` tool runs under a restricted database role.
+- **Strict PII Protection:** How we shifted from simple string obfuscation to cryptographic hashing (SHA-256) and data minimization (removing exact DOB).
+- **Zero-Trust Database Roles:** The system uses distinct roles: a `dbt_user` for transformation and a strict `app_user` for the backend that is physically blocked from querying raw PII.
 - **MCP Protocol:** Why using a standardized protocol is better than ad-hoc python scripts.
+
+### Slide 7: Advanced Data Engineering
+- **Surrogate Keys:** How we future-proofed our dimensional models against source-system changes using hash-based keys.
+- **Slowly Changing Dimensions (SCD2):** Demonstrate how we track historical changes (e.g. customer segment upgrades) over time so past analytical reports remain accurate.
 
 ---
 

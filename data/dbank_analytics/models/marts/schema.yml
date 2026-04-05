@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: "Dimensional model for customers, including PII masking."
+    columns:
+      - name: customer_id
+        description: "Primary Key"
+        tests:
+          - unique
+          - not_null
+      - name: email_masked
+        description: "Masked email address"
+
+  - name: dim_products
+    description: "Dimensional model for products."
+    columns:
+      - name: product_id
+        description: "Primary Key"
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_tickets
+    description: "Fact table for support tickets."
+    columns:
+      - name: ticket_id
+        description: "Primary Key"
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign Key to dim_customers"
+        tests:
+          - not_null
+      - name: product_id
+        description: "Foreign Key to dim_products"
+        tests:
+          - not_null

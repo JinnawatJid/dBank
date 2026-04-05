@@ -15,11 +15,11 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
   - [x] Write a script or use `psql` to load these CSVs into the `raw` schema.
   - *DoD: Data is queryable in PostgreSQL under the `raw` schema.*
 
-- [ ] **Task 1.3: dbt Data Modeling**
-  - [ ] Run `dbt init dbank_analytics`.
-  - [ ] Create `models/staging/` and `models/marts/` directories.
-  - [ ] Write SQL for `fact_tickets`, `dim_customers`, `dim_products`.
-  - [ ] Add `schema.yml` with basic tests (unique, not_null).
+- [x] **Task 1.3: dbt Data Modeling**
+  - [x] Run `dbt init dbank_analytics`.
+  - [x] Create `models/staging/` and `models/marts/` directories.
+  - [x] Write SQL for `fact_tickets`, `dim_customers`, `dim_products`.
+  - [x] Add `schema.yml` with basic tests (unique, not_null).
   - *DoD: `dbt run` and `dbt test` complete without errors.*
 
 - [ ] **Task 1.4: Knowledge Base Processing**
