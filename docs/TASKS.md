@@ -22,10 +22,11 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
   - [x] Add `schema.yml` with basic tests (unique, not_null).
   - *DoD: `dbt run` and `dbt test` complete without errors.*
 
-- [ ] **Task 1.4: Knowledge Base Processing**
-  - [ ] Create `data/kb/` folder and write 5 Markdown files (e.g., "v1.2_release_notes.md", "login_issues.md").
-  - [ ] Write `scripts/embed_kb.py` to chunk text and generate vectors using Google AI embeddings.
-  - [ ] Insert vectors into `kb_embeddings` table.
+- [x] **Task 1.4: Knowledge Base Processing (Enterprise-Grade Update)**
+  - [x] Create `data/kb/` folder and write 5 Markdown files (e.g., "v1.2_release_notes.md", "login_issues.md").
+  - [x] Implement schema creation and least-privilege RBAC in `db-init/init-kb-schema.sh` for reliable deployment.
+  - [x] Write `scripts/embed_kb.py` to chunk text, utilizing structured Python `logging` instead of prints.
+  - [x] Generate vectors using Google AI embeddings and insert them into `kb_embeddings` table using optimized `psycopg2.extras.execute_batch` inserts.
   - *DoD: `SELECT * FROM kb_embeddings LIMIT 1;` returns a valid vector.*
 
 ---
