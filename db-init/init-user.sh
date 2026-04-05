@@ -2,17 +2,31 @@
 set -e
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    CREATE USER $READONLY_USER WITH PASSWORD '$READONLY_PASSWORD';
-    GRANT CONNECT ON DATABASE $POSTGRES_DB TO $READONLY_USER;
-
-    -- Grant usage and select on the public schema (and future tables)
-    GRANT USAGE ON SCHEMA public TO $READONLY_USER;
-    GRANT SELECT ON ALL TABLES IN SCHEMA public TO $READONLY_USER;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO $READONLY_USER;
-
-    -- Also prepare for a 'raw' schema if it gets created
+    -- 1. Create schemas and extensions
     CREATE SCHEMA IF NOT EXISTS raw;
-    GRANT USAGE ON SCHEMA raw TO $READONLY_USER;
-    GRANT SELECT ON ALL TABLES IN SCHEMA raw TO $READONLY_USER;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA raw GRANT SELECT ON TABLES TO $READONLY_USER;
+    CREATE SCHEMA IF NOT EXISTS marts;
+    CREATE SCHEMA IF NOT EXISTS snapshots;
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+    -- 2. Create the dbt user (has read/write on analytics schemas)
+    CREATE USER $DBT_USER WITH PASSWORD '$DBT_PASSWORD';
+    GRANT CONNECT ON DATABASE $POSTGRES_DB TO $DBT_USER;
+
+    -- dbt needs read access to raw data
+    GRANT USAGE ON SCHEMA raw TO $DBT_USER;
+    GRANT SELECT ON ALL TABLES IN SCHEMA raw TO $DBT_USER;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA raw GRANT SELECT ON TABLES TO $DBT_USER;
+
+    -- dbt needs write access to its target schemas
+    GRANT ALL ON SCHEMA marts TO $DBT_USER;
+    GRANT ALL ON SCHEMA snapshots TO $DBT_USER;
+
+    -- 3. Create the app user (strict read-only, NO access to raw)
+    CREATE USER $APP_USER WITH PASSWORD '$APP_PASSWORD';
+    GRANT CONNECT ON DATABASE $POSTGRES_DB TO $APP_USER;
+
+    -- App user only gets access to transformed/masked data in the marts schema
+    GRANT USAGE ON SCHEMA marts TO $APP_USER;
+    GRANT SELECT ON ALL TABLES IN SCHEMA marts TO $APP_USER;
+    ALTER DEFAULT PRIVILEGES FOR USER $DBT_USER IN SCHEMA marts GRANT SELECT ON TABLES TO $APP_USER;
 EOSQL
