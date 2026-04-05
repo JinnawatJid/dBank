@@ -41,6 +41,8 @@ You have 45 minutes to present your solution, followed by a 15-minute Q&A. The g
 ### Slide 7: Advanced Data Engineering
 - **Surrogate Keys:** How we future-proofed our dimensional models against source-system changes using hash-based keys.
 - **Slowly Changing Dimensions (SCD2):** Demonstrate how we track historical changes (e.g. customer segment upgrades) over time so past analytical reports remain accurate.
+- **Performant Data Ingestion:** Discuss the transition from row-by-row operations to utilizing batch inserts (`execute_batch`) for the knowledge base pgvector embeddings, showcasing an understanding of scalability for high-throughput ingestion.
+- **Infrastructure as Code (IaC) & Idempotency:** Explain the decision to extract table schema and permission definitions into database initialization scripts (`db-init/`), ensuring reproducible and secure state management, rather than runtime application code modifications.
 
 ---
 

@@ -1,9 +1,14 @@
 import os
 import glob
-import textwrap
+import logging
 from dotenv import load_dotenv
 import psycopg2
+from psycopg2.extras import execute_batch
 import google.generativeai as genai
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
@@ -49,7 +54,7 @@ def get_embedding(text):
     return result['embedding']
 
 def main():
-    print("Connecting to PostgreSQL database...")
+    logger.info("Connecting to PostgreSQL database...")
     try:
         conn = psycopg2.connect(
             dbname=DB_NAME,
@@ -58,74 +63,69 @@ def main():
             host=DB_HOST,
             port=DB_PORT
         )
-        conn.autocommit = True
         cur = conn.cursor()
     except Exception as e:
-        print(f"Error connecting to the database: {e}")
+        logger.error(f"Error connecting to the database: {e}")
         return
 
-    # 1. Enable pgvector extension and Create Table
-    print("Setting up database schema for pgvector...")
-    cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
-
-    # We drop the table if it exists to make this script idempotent
-    cur.execute("DROP TABLE IF EXISTS public.kb_embeddings;")
-
-    # Text embedding 004 generates 768-dimensional vectors
-    create_table_sql = """
-    CREATE TABLE public.kb_embeddings (
-        id SERIAL PRIMARY KEY,
-        filename VARCHAR(255),
-        chunk_index INTEGER,
-        content TEXT,
-        embedding vector(768),
-        _ingested_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-    );
-    """
-    cur.execute(create_table_sql)
-
-    # 2. Apply Least Privilege: Grant SELECT to APP_USER
-    if APP_USER:
-        print(f"Granting SELECT permissions on kb_embeddings to {APP_USER}...")
-        cur.execute(f"GRANT SELECT ON public.kb_embeddings TO {APP_USER};")
-
-    # 3. Process Markdown Files
+    # Process Markdown Files
     kb_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'kb')
     md_files = glob.glob(os.path.join(kb_dir, '*.md'))
 
     if not md_files:
-        print(f"No markdown files found in {kb_dir}")
+        logger.warning(f"No markdown files found in {kb_dir}")
         return
 
-    print(f"Found {len(md_files)} markdown files. Starting processing...")
+    logger.info(f"Found {len(md_files)} markdown files. Starting processing...")
+
+    # Clear existing data to make this idempotent
+    try:
+        logger.info("Clearing existing kb_embeddings data...")
+        cur.execute("TRUNCATE TABLE public.kb_embeddings RESTART IDENTITY;")
+        conn.commit()
+    except Exception as e:
+        logger.error(f"Failed to clear existing embeddings table. Does the table exist? Error: {e}")
+        conn.rollback()
+        return
+
+    records_to_insert = []
 
     for file_path in md_files:
         filename = os.path.basename(file_path)
-        print(f"Processing {filename}...")
+        logger.info(f"Processing {filename}...")
 
         with open(file_path, 'r', encoding='utf-8') as f:
             text = f.read()
 
         chunks = chunk_text(text, chunk_size=800, overlap=100)
-        print(f"  Split into {len(chunks)} chunks.")
+        logger.info(f"  Split into {len(chunks)} chunks.")
 
         for i, chunk in enumerate(chunks):
             try:
                 # Generate Embedding
                 embedding = get_embedding(chunk)
-
-                # Insert into database
-                insert_sql = """
-                INSERT INTO public.kb_embeddings (filename, chunk_index, content, embedding)
-                VALUES (%s, %s, %s, %s);
-                """
-                # psycopg2 handles python lists formatting appropriately for the vector type
-                cur.execute(insert_sql, (filename, i, chunk, embedding))
+                records_to_insert.append((filename, i, chunk, embedding))
 
             except Exception as e:
-                 print(f"  Error processing chunk {i} of {filename}: {e}")
+                 logger.error(f"  Error generating embedding for chunk {i} of {filename}: {e}")
 
-    print("Knowledge base processing complete.")
+    if records_to_insert:
+        try:
+            logger.info(f"Batch inserting {len(records_to_insert)} records into database...")
+            insert_sql = """
+            INSERT INTO public.kb_embeddings (filename, chunk_index, content, embedding)
+            VALUES (%s, %s, %s, %s);
+            """
+            execute_batch(cur, insert_sql, records_to_insert)
+            conn.commit()
+            logger.info("Batch insertion successful.")
+        except Exception as e:
+            logger.error(f"Error during batch insertion: {e}")
+            conn.rollback()
+    else:
+        logger.warning("No records generated to insert.")
+
+    logger.info("Knowledge base processing complete.")
     cur.close()
     conn.close()
 
