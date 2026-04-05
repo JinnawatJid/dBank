@@ -29,6 +29,12 @@ def generate_customers():
         writer = csv.writer(f)
         writer.writerow(['customer_id', 'first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'join_date', 'customer_segment'])
         for i in range(1, NUM_CUSTOMERS + 1):
+            # For demonstration of SCD Type 2, let's make customer CUST-00001 start as 'Retail'
+            if i == 1:
+                segment = 'Retail'
+            else:
+                segment = random.choice(segments)
+
             writer.writerow([
                 f"CUST-{i:05d}",
                 fake.first_name(),
@@ -37,7 +43,7 @@ def generate_customers():
                 fake.phone_number(),
                 fake.date_of_birth(minimum_age=18, maximum_age=90).isoformat(),
                 fake.date_between(start_date='-5y', end_date='today').isoformat(),
-                random.choice(segments)
+                segment
             ])
 
 def generate_products():
@@ -203,23 +209,10 @@ def load_data_to_db():
 
         print("Data loaded successfully.")
 
-        # Grant least privilege access to the read-only user
-        try:
-            readonly_user = os.getenv("READONLY_USER", "dbank_readonly")
-
-            # Check if user exists before attempting grants
-            cur.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (readonly_user,))
-            if cur.fetchone():
-                print(f"Granting read-only access to user {readonly_user}...")
-                cur.execute(f"GRANT USAGE ON SCHEMA raw TO {readonly_user};")
-                cur.execute(f"GRANT SELECT ON ALL TABLES IN SCHEMA raw TO {readonly_user};")
-                # Also ensure future tables get these permissions (though not strictly necessary for this static setup)
-                cur.execute(f"ALTER DEFAULT PRIVILEGES IN SCHEMA raw GRANT SELECT ON TABLES TO {readonly_user};")
-                print("Permissions granted.")
-            else:
-                print(f"Warning: User {readonly_user} not found. Skipping permission grants.")
-        except Exception as perm_error:
-            print(f"Warning: Could not grant permissions: {perm_error}")
+        # In the new strict corporate setup, the initialization script (init-user.sh)
+        # handles creating the dbt_user and app_user and granting appropriate permissions.
+        # We no longer dynamically grant raw schema access here because the app_user
+        # should intentionally NOT have access to the raw schema.
 
         # Verify
         cur.execute("SELECT count(*) FROM raw.customers;")

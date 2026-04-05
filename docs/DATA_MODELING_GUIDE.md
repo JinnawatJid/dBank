@@ -32,22 +32,42 @@ When visualized, the Fact table sits in the center, surrounded by the Dimension 
 *   **Performance:** Queries for analytical reporting (aggregating tickets by customer segment or product type) are much faster because the structure is optimized for read-heavy operations.
 *   **Simplicity:** It provides a highly intuitive model for business analysts to understand. They just join the central Fact to the surrounding Dimensions.
 
-## 3. PII Masking & Defense in Depth
+## 3. Strict PII Masking & Defense in Depth
 
 **What is PII?**
-Personally Identifiable Information (PII) is any data that can be used to identify a specific individual (e.g., email address, phone number, social security number).
-
-**What is Defense in Depth?**
-Defense in Depth is an information security approach where multiple layers of security controls are placed throughout an IT system. If one layer fails, another layer is there to catch the issue.
+Personally Identifiable Information (PII) is any data that can be used to identify a specific individual (e.g., email address, phone number, social security number). In corporate banking, compliance with regulations like GDPR or CCPA demands strict data minimization.
 
 **Implementation in our project:**
-Our PII masking strategy starts at the **Database Layer**. When we transform the raw data into `dim_customers` using dbt, we apply SQL functions to partially mask the sensitive fields:
+Our PII masking strategy starts at the **Database Layer**. When transforming raw data into `dim_customers` using dbt, we apply strict corporate standards:
+1.  **Data Minimization:** We drop the exact `date_of_birth` entirely in the analytical layer and only expose a derived `age_years`.
+2.  **One-Way Hashing:** Instead of easily decipherable string obfuscation (like `***@***.com`), we use cryptographic SHA-256 hashing for emails and phone numbers.
 ```sql
-CONCAT(SUBSTR(email, 1, 3), '***@***.com') AS email_masked
+ENCODE(DIGEST(email, 'sha256'), 'hex') AS email_hash
 ```
-By doing this at the database level, we guarantee that any downstream tool (like our backend API or MCP server) querying the dimensional models will *never* see the full raw PII. This is the first layer of defense.
+This ensures downstream systems can still count unique users (as the hash is consistent) without ever exposing the raw PII.
 
-In the future, the Application Layer (e.g., using Microsoft Presidio) will act as a second layer of defense to scrub any accidental PII that might have been typed into free-text fields (like ticket descriptions).
+**Strict Database Roles (Least Privilege)**
+To enforce this, we use distinct database users:
+*   `dbt_user`: Has access to the `raw` schema to read raw data and write to the `marts` schema.
+*   `app_user`: The backend application connects using this user, which *only* has read-access to the `marts` schema. It is physically impossible for the application to query the unmasked raw data.
+
+In the future, the Application Layer (e.g., using Microsoft Presidio) will act as a second layer of defense to scrub any accidental PII typed into free-text fields (like ticket descriptions).
+
+## 4. Surrogate Keys
+
+**What are Surrogate Keys?**
+Instead of relying on the natural key from the source system (e.g., `customer_id = 'CUST-00001'`), a data warehouse typically generates its own primary key, known as a Surrogate Key.
+
+**Implementation:**
+We use the `dbt_utils.generate_surrogate_key` macro to create an MD5 hash of the natural keys, generating columns like `customer_key`, `product_key`, and `ticket_key`. This isolates the data warehouse from changes in the source system (e.g., if the backend decides to change the format of customer IDs) and ensures consistent performance for joins.
+
+## 5. Slowly Changing Dimensions (SCD Type 2)
+
+**What is SCD Type 2?**
+In analytics, you often need to track historical changes. If a customer upgrades from the 'Retail' segment to 'Wealth', you don't want to just overwrite their old segment, because past analytical reports would retroactively change. SCD Type 2 solves this by creating a new row for every change, tracking validity dates.
+
+**Implementation:**
+We utilize dbt's **Snapshots** feature (`snapshots/customers_snapshot.sql`). It tracks changes to the `stg_customers` model. When the mock data script updates a customer's segment, the snapshot automatically expires the old record (sets `dbt_valid_to`) and inserts the new record. `dim_customers` then reads from this snapshot, providing analysts with a complete history of the customer's attributes over time.
 
 ---
 
