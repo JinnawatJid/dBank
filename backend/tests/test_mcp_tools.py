@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from backend.mcp_tools import sql_query, kb_search, kpi_top_root_causes
+from backend.mcp_tools import sql_query, kb_search, kpi_top_root_causes, SQLQueryInput, KBSearchInput
 
 # --- Unit Tests with Mocked DB ---
 
@@ -16,7 +16,8 @@ def test_sql_query_success(mock_session_local):
     mock_session.execute.return_value = [mock_row]
 
     # Call the tool
-    result = sql_query("SELECT * FROM test WHERE id = :id", {"id": 1})
+    input_data = SQLQueryInput(template="SELECT * FROM test WHERE id = :id", params={"id": 1})
+    result = sql_query(input_data)
 
     # Assertions
     assert result["status"] == "success"
@@ -33,10 +34,12 @@ def test_sql_query_error(mock_session_local):
     # Force an exception during execution
     mock_session.execute.side_effect = Exception("DB Connection Failed")
 
-    result = sql_query("SELECT * FROM test", {})
+    input_data = SQLQueryInput(template="SELECT * FROM test")
+    result = sql_query(input_data)
 
     assert result["status"] == "error"
     assert "DB Connection Failed" in result["message"]
+    mock_session.rollback.assert_called_once()
     mock_session.close.assert_called_once()
 
 @patch("backend.mcp_tools._get_embedding")
@@ -57,7 +60,8 @@ def test_kb_search_success(mock_session_local, mock_get_embedding):
     mock_session.execute.return_value = [mock_row]
 
     # Call the tool
-    result = kb_search("How to login?", top_k=2)
+    input_data = KBSearchInput(query="How to login?", top_k=2)
+    result = kb_search(input_data)
 
     # Assertions
     assert result["status"] == "success"
