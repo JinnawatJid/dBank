@@ -1,0 +1,109 @@
+name: Deep Insights Copilot CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: dbank_admin
+          POSTGRES_PASSWORD: secure_admin_password_here
+          POSTGRES_DB: dbank_analytics
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install dbt-postgres
+
+    - name: Initialize Database Users and Permissions
+      env:
+        POSTGRES_USER: dbank_admin
+        POSTGRES_PASSWORD: secure_admin_password_here
+        POSTGRES_DB: dbank_analytics
+        DBT_USER: dbank_dbt
+        DBT_PASSWORD: secure_dbt_password_here
+        APP_USER: dbank_app
+        APP_PASSWORD: secure_app_password_here
+        PGPASSWORD: secure_admin_password_here
+        POSTGRES_HOST: 127.0.0.1
+      run: |
+        # Wait for PostgreSQL to be completely ready
+        sleep 5
+        bash db-init/init-user.sh
+        bash db-init/init-kb-schema.sh
+
+    - name: Generate mock data
+      env:
+        POSTGRES_USER: dbank_admin
+        POSTGRES_PASSWORD: secure_admin_password_here
+        POSTGRES_DB: dbank_analytics
+        POSTGRES_HOST: 127.0.0.1
+        POSTGRES_PORT: 5432
+        DBT_USER: dbank_dbt
+        DBT_PASSWORD: secure_dbt_password_here
+      run: |
+        python scripts/generate_mock_data.py
+
+    - name: Embed Knowledge Base
+      env:
+        POSTGRES_USER: dbank_admin
+        POSTGRES_PASSWORD: secure_admin_password_here
+        POSTGRES_DB: dbank_analytics
+        POSTGRES_HOST: 127.0.0.1
+        POSTGRES_PORT: 5432
+        GOOGLE_API_KEY: "dummy_key_for_testing"
+      run: |
+        python scripts/embed_kb.py
+
+    - name: Run dbt Data Modeling Tests
+      env:
+        DBT_USER: dbank_dbt
+        DBT_PASSWORD: secure_dbt_password_here
+        POSTGRES_HOST: 127.0.0.1
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: dbank_analytics
+      run: |
+        cd data/dbank_analytics
+        dbt deps
+        dbt run --models staging
+        dbt snapshot
+        dbt run
+        dbt test
+
+    - name: Run Backend Pytest (Unit & Integration)
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        POSTGRES_USER: dbank_admin
+        POSTGRES_PASSWORD: secure_admin_password_here
+        POSTGRES_DB: dbank_analytics
+        POSTGRES_HOST: 127.0.0.1
+        POSTGRES_PORT: 5432
+        APP_USER: dbank_app
+        APP_PASSWORD: secure_app_password_here
+        GOOGLE_API_KEY: "dummy_key_for_testing"
+      run: |
+        pytest backend/tests

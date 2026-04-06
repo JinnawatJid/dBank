@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+psql -v ON_ERROR_STOP=1 -h "$POSTGRES_HOST" --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     -- 1. Create schemas and extensions
     CREATE SCHEMA IF NOT EXISTS raw;
     CREATE SCHEMA IF NOT EXISTS marts;
@@ -9,7 +9,11 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
     -- 2. Create the dbt user (has read/write on analytics schemas)
-    CREATE USER $DBT_USER WITH PASSWORD '$DBT_PASSWORD';
+    DO \$\$ BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DBT_USER') THEN
+            CREATE USER $DBT_USER WITH PASSWORD '$DBT_PASSWORD';
+        END IF;
+    END \$\$;
     GRANT CONNECT ON DATABASE $POSTGRES_DB TO $DBT_USER;
 
     -- dbt needs read access to raw data
@@ -22,7 +26,11 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT ALL ON SCHEMA snapshots TO $DBT_USER;
 
     -- 3. Create the app user (strict read-only, NO access to raw)
-    CREATE USER $APP_USER WITH PASSWORD '$APP_PASSWORD';
+    DO \$\$ BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$APP_USER') THEN
+            CREATE USER $APP_USER WITH PASSWORD '$APP_PASSWORD';
+        END IF;
+    END \$\$;
     GRANT CONNECT ON DATABASE $POSTGRES_DB TO $APP_USER;
 
     -- App user only gets access to transformed/masked data in the marts schema
