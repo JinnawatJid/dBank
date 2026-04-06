@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-  tools_used?: string[];
-}
+import { useRef, useEffect } from "react";
+import { useChat } from "../../hooks/useChat";
+import { CHAT_PLACEHOLDERS } from "../../config/constants";
 
 export default function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { messages, input, setInput, isLoading, sendMessage } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -22,49 +16,6 @@ export default function ChatInterface() {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = { role: "user", content: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("http://localhost:8000/api/v1/ask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query: userMessage.content }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.answer,
-        tools_used: data.tools_used,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error("Error fetching response:", error);
-      const errorMessage: Message = {
-        role: "assistant",
-        content: "Sorry, I encountered an error. Please try again later.",
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <>
       {/* Chat Feed Container */}
@@ -73,8 +24,8 @@ export default function ChatInterface() {
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center opacity-50 mt-20">
             <span className="material-symbols-outlined text-6xl mb-4 text-primary-container">psychology</span>
-            <h2 className="text-2xl font-headline font-bold text-on-surface">How can I assist you today?</h2>
-            <p className="text-slate-500 max-w-md mt-2 font-body">Ask about market trends, risk reports, or portfolio health using natural language.</p>
+            <h2 className="text-2xl font-headline font-bold text-on-surface">{CHAT_PLACEHOLDERS.EMPTY_STATE_TITLE}</h2>
+            <p className="text-slate-500 max-w-md mt-2 font-body">{CHAT_PLACEHOLDERS.EMPTY_STATE_DESC}</p>
           </div>
         ) : (
           messages.map((msg, index) => (
@@ -139,7 +90,7 @@ export default function ChatInterface() {
 
       {/* Sticky Bottom Input Area */}
       <div className="fixed bottom-0 right-0 lg:left-64 left-0 p-6 glass-panel z-40">
-        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex flex-col gap-3">
+        <form onSubmit={sendMessage} className="max-w-4xl mx-auto flex flex-col gap-3">
           <div className="relative group">
             <input
               type="text"
@@ -147,10 +98,11 @@ export default function ChatInterface() {
               onChange={(e) => setInput(e.target.value)}
               disabled={isLoading}
               className="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl py-4 pl-6 pr-32 focus:outline-none focus:ring-2 ring-on-primary-container/30 text-on-surface placeholder-slate-400 shadow-sm transition-all"
-              placeholder="Ask about market trends, risk reports, or portfolio health..."
+              placeholder={CHAT_PLACEHOLDERS.INPUT_PLACEHOLDER}
+              aria-label="Chat input"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              <button type="button" className="p-2 text-slate-400 hover:text-slate-600 transition-colors hidden sm:block">
+              <button type="button" aria-label="Attach file" className="p-2 text-slate-400 hover:text-slate-600 transition-colors hidden sm:block">
                 <span className="material-symbols-outlined text-[20px]">attach_file</span>
               </button>
               <button
