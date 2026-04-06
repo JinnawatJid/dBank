@@ -1,6 +1,6 @@
 # NotebookLM Study Guide: Deep Insights Copilot (Data & Infrastructure)
 
-**Context for NotebookLM:**
+**Context for NotebookLM:** 
 This document outlines the core data engineering and infrastructure concepts implemented in Phase 1 of the "Deep Insights Copilot" project. The user is a Mission Engineer preparing for a presentation to a CTO. They have no prior experience in this field and need to understand the *what*, the *why*, and the *business value* of these concepts to sound like an industry expert.
 
 Please use this document to explain these topics simply, generate practice interview questions, and help the user build a compelling narrative for their presentation.
@@ -18,14 +18,14 @@ Please use this document to explain these topics simply, generate practice inter
 
 ## Topic 2: dbt (Data Build Tool) and Analytics Engineering
 **The Concept:** Raw data from applications is usually messy and hard to analyze. dbt is the industry-standard tool for transforming data *inside* the database (ELT paradigm) using simple SQL.
-**How we implemented it:** We created a two-layer architecture: `staging` (raw data lightly cleaned) and `marts` (business-ready data).
+**How we implemented it:** We created a two-layer architecture: `staging` (raw data lightly cleaned) and `marts` (business-ready data). 
 **Key Terms for NotebookLM to Explain:**
 *   ELT (Extract, Load, Transform) vs ETL
 *   Data Lineage
 *   Why test data before feeding it to an AI? (Hint: "Garbage in, hallucination out").
 
 ## Topic 3: Data Modeling (Star Schema & Slowly Changing Dimensions)
-**The Concept:** Structuring data so it is fast to query and historically accurate.
+**The Concept:** Structuring data so it is fast to query and historically accurate. 
 **How we implemented it:** We used a "Star Schema" with Fact tables (events, like tickets) and Dimension tables (nouns, like customers). We implemented Slowly Changing Dimensions (SCD Type 2) using dbt snapshots to track when a customer's data changes over time.
 **Key Terms for NotebookLM to Explain:**
 *   Fact Tables vs. Dimension Tables
@@ -34,7 +34,7 @@ Please use this document to explain these topics simply, generate practice inter
 
 ## Topic 4: Enterprise Security & Data Privacy (PII)
 **The Concept:** Protecting Personally Identifiable Information (PII) in a corporate banking environment. You cannot just send customer names to an external LLM.
-**How we implemented it:** We used a "Defense in Depth" strategy.
+**How we implemented it:** We used a "Defense in Depth" strategy. 
 1.  **Least Privilege / RBAC (Role-Based Access Control):** The application database user (`app_user`) is physically blocked from reading the raw tables. It can only read the transformed, masked tables.
 2.  **Cryptographic Hashing:** Instead of just putting "XXX" over a name, we used SHA-256 one-way hashing for emails and phones. We also used Data Minimization (dropping exact birthdays and calculating age instead).
 **Key Terms for NotebookLM to Explain:**
