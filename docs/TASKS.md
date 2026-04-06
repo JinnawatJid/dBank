@@ -66,6 +66,7 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
   - [x] Implement a chat interface component for user/assistant conversation.
   - [x] Connect UI to `http://backend:8000/api/v1/ask`.
   - [x] Display an expandable section for "🛠️ Tool Logs" showing which MCP tools were used.
+  - [x] *Refactored: Implemented custom hooks for state management, environment variables, accessibility standards, and configuration decoupling.*
   - *DoD: You can chat with the AI through the browser on `localhost:3000`.*
 
 - [ ] **Task 3.2: Dockerization**
