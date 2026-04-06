@@ -1,4 +1,10 @@
 from typing import Any, Callable, Dict, List
+from pydantic import BaseModel
+
+class ToolDefinition(BaseModel):
+    name: str
+    description: str
+    parameters: Dict[str, Any]
 
 class MCPServerCore:
     """
@@ -9,20 +15,19 @@ class MCPServerCore:
         # A dictionary mapping tool names to their executing functions
         self._tools: Dict[str, Callable] = {}
         # A dictionary holding the JSON Schema definitions for each tool
-        self._tool_definitions: List[Dict[str, Any]] = []
+        self._tool_definitions: List[ToolDefinition] = []
 
     def register_tool(self, name: str, description: str, parameters: Dict[str, Any], func: Callable):
         """Registers a tool so the LLM knows it exists and how to use it."""
+        # Use Pydantic model for strict validation
+        tool_def = ToolDefinition(name=name, description=description, parameters=parameters)
+
         self._tools[name] = func
-        self._tool_definitions.append({
-            "name": name,
-            "description": description,
-            "parameters": parameters
-        })
+        self._tool_definitions.append(tool_def)
 
     def list_tools(self) -> List[Dict[str, Any]]:
         """Returns the list of registered tool definitions for the LLM prompt."""
-        return self._tool_definitions
+        return [tool.model_dump() for tool in self._tool_definitions]
 
     def execute_tool(self, name: str, kwargs: Dict[str, Any]) -> Any:
         """Executes a specific tool by name with the given arguments."""
