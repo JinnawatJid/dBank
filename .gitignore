@@ -49,3 +49,4 @@ dist/
 target/
 dbt_packages/
 logs/
+audit.log
