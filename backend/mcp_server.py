@@ -40,37 +40,43 @@ class MCPServerCore:
 # Create a singleton instance to be used across the application
 mcp_server = MCPServerCore()
 
-# --- Placeholder Tool Implementations for Task 2.2 DoD ---
-
-def _dummy_sql_query(template: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
-    return {"status": "success", "result": "Dummy SQL result"}
-
-def _dummy_kb_search(query: str) -> Dict[str, Any]:
-    return {"status": "success", "result": "Dummy KB search result"}
-
-def _dummy_kpi_root_causes() -> Dict[str, Any]:
-    return {"status": "success", "result": "Dummy KPI result"}
+# --- Import Tool Implementations ---
+from backend.mcp_tools import sql_query, kb_search, kpi_top_root_causes
 
 # Register the tools required by Task 2.3
 mcp_server.register_tool(
     name="sql.query",
-    description="Executes a read-only SQL query.",
-    parameters={"type": "object", "properties": {"template": {"type": "string"}}},
-    func=_dummy_sql_query
+    description="Executes a read-only SQL query with parameterized execution.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "template": {"type": "string", "description": "The SQL query to execute. Use :param_name for parameters."},
+            "params": {"type": "object", "description": "Dictionary of parameters to bind to the query."}
+        },
+        "required": ["template"]
+    },
+    func=sql_query
 )
 
 mcp_server.register_tool(
     name="kb.search",
-    description="Searches the knowledge base using vector similarity.",
-    parameters={"type": "object", "properties": {"query": {"type": "string"}}},
-    func=_dummy_kb_search
+    description="Searches the knowledge base using vector similarity, returning top 5 results by default.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "query": {"type": "string", "description": "The search query text."},
+            "top_k": {"type": "integer", "description": "Number of results to return (default 5)."}
+        },
+        "required": ["query"]
+    },
+    func=kb_search
 )
 
 mcp_server.register_tool(
     name="kpi.top_root_causes",
-    description="Retrieves aggregate KPIs for support ticket root causes.",
+    description="Retrieves aggregate KPIs for support ticket root causes, including volume and average resolution time grouped by issue type.",
     parameters={"type": "object", "properties": {}},
-    func=_dummy_kpi_root_causes
+    func=kpi_top_root_causes
 )
 
 if __name__ == "__main__":

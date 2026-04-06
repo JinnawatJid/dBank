@@ -45,10 +45,10 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
   - [x] *Refactored: Upgraded tool schema registration to use strict Pydantic models for enterprise-grade validation.*
   - *DoD: You can programmatically call `list_tools()` and see 3 tools registered.*
 
-- [ ] **Task 2.3: Build Tools**
-  - [ ] Implement `sql.query(template, params)`. Ensure read-only user execution.
-  - [ ] Implement `kb.search(query)`. Execute cosine similarity SQL against `kb_embeddings`.
-  - [ ] Implement `kpi.top_root_causes()`. Execute specific aggregate SQL.
+- [x] **Task 2.3: Build Tools**
+  - [x] Implement `sql.query(template, params)`. Ensure read-only user execution.
+  - [x] Implement `kb.search(query)`. Execute cosine similarity SQL against `kb_embeddings`.
+  - [x] Implement `kpi.top_root_causes()`. Execute specific aggregate SQL.
   - *DoD: Unit tests for all three tools pass (or manual testing confirms correct JSON output).*
 
 - [ ] **Task 2.4: LLM Orchestration & Guardrails**
