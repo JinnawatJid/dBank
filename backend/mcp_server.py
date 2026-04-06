@@ -34,8 +34,21 @@ class MCPServerCore:
         if name not in self._tools:
             raise ValueError(f"Tool '{name}' is not registered.")
 
-        # Execute the function with the provided keyword arguments
-        return self._tools[name](**kwargs)
+        func = self._tools[name]
+
+        # Tools are defined in mcp_tools using Pydantic models (e.g. input_data: SQLQueryInput)
+        # We need to map the dictionary `kwargs` to the expected Pydantic model.
+        import inspect
+        sig = inspect.signature(func)
+
+        if len(sig.parameters) == 1 and "input_data" in sig.parameters:
+            # Reconstruct the Pydantic model
+            model_class = sig.parameters["input_data"].annotation
+            input_data_instance = model_class(**kwargs)
+            return func(input_data=input_data_instance)
+        else:
+            # Fallback for functions taking no args or unpacking kwargs directly
+            return func(**kwargs)
 
 # Create a singleton instance to be used across the application
 mcp_server = MCPServerCore()
