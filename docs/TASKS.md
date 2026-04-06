@@ -69,14 +69,14 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
   - [x] *Refactored: Implemented custom hooks for state management, environment variables, accessibility standards, and configuration decoupling.*
   - *DoD: You can chat with the AI through the browser on `localhost:3000`.*
 
-- [ ] **Task 3.2: Dockerization**
-  - [ ] Write `Dockerfile` for backend.
-  - [ ] Write `Dockerfile` for frontend.
-  - [ ] Update `docker-compose.yml` to include `backend` and `frontend` services.
+- [x] **Task 3.2: Dockerization**
+  - [x] Write `Dockerfile` for backend.
+  - [x] Write `Dockerfile` for frontend.
+  - [x] Update `docker-compose.yml` to include `backend` and `frontend` services.
   - *DoD: Running `docker-compose up --build` spins up the entire working system.*
 
-- [ ] **Task 3.3: Final Checks & Submission**
-  - [ ] Ensure `.env` is in `.gitignore` and create a `.env.example`.
-  - [ ] Write `README.md` with instructions on how to start the app.
-  - [ ] Create a ZIP file or verify the GitHub repo is accessible.
+- [x] **Task 3.3: Final Checks & Submission**
+  - [x] Ensure `.env` is in `.gitignore` and create a `.env.example`.
+  - [x] Write `README.md` with instructions on how to start the app.
+  - [x] Create a ZIP file or verify the GitHub repo is accessible.
   - *DoD: Project is submitted to Joey.*
