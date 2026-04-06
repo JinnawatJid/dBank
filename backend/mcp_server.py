@@ -61,10 +61,10 @@ mcp_server.register_tool(
     name="sql.query",
     description="Executes a read-only SQL query with parameterized execution.",
     parameters={
-        "type": "object",
+        "type": "OBJECT",
         "properties": {
-            "template": {"type": "string", "description": "The SQL query to execute. Use :param_name for parameters."},
-            "params": {"type": "object", "description": "Dictionary of parameters to bind to the query."}
+            "template": {"type": "STRING", "description": "The SQL query to execute. Use :param_name for parameters."},
+            "params": {"type": "OBJECT", "description": "Dictionary of parameters to bind to the query."}
         },
         "required": ["template"]
     },
@@ -75,10 +75,10 @@ mcp_server.register_tool(
     name="kb.search",
     description="Searches the knowledge base using vector similarity, returning top 5 results by default.",
     parameters={
-        "type": "object",
+        "type": "OBJECT",
         "properties": {
-            "query": {"type": "string", "description": "The search query text."},
-            "top_k": {"type": "integer", "description": "Number of results to return (default 5)."}
+            "query": {"type": "STRING", "description": "The search query text."},
+            "top_k": {"type": "INTEGER", "description": "Number of results to return (default 5)."}
         },
         "required": ["query"]
     },
@@ -88,7 +88,7 @@ mcp_server.register_tool(
 mcp_server.register_tool(
     name="kpi.top_root_causes",
     description="Retrieves aggregate KPIs for support ticket root causes, including volume and average resolution time grouped by issue type.",
-    parameters={"type": "object", "properties": {}},
+    parameters={"type": "OBJECT", "properties": {}},
     func=kpi_top_root_causes
 )
 
