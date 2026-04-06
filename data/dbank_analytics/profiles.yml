@@ -1,12 +1,12 @@
 dbank_analytics:
-  target: dev
   outputs:
     dev:
       type: postgres
-      host: 127.0.0.1
-      user: dbank_admin
-      password: secure_admin_password_here
-      port: 5432
-      dbname: dbank_analytics
-      schema: public
       threads: 4
+      host: 127.0.0.1
+      port: 5432
+      user: dbank_dbt
+      password: secure_dbt_password_here
+      dbname: dbank_analytics
+      schema: marts
+  target: dev

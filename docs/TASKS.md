@@ -61,11 +61,11 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
 
 ## Day 3: UI & DevOps
 
-- [ ] **Task 3.1: Next.js UI**
-  - [ ] Initialize Next.js project in `frontend/`.
-  - [ ] Implement a chat interface component for user/assistant conversation.
-  - [ ] Connect UI to `http://backend:8000/ask`.
-  - [ ] Display an expandable section for "🛠️ Tool Logs" showing which MCP tools were used.
+- [x] **Task 3.1: Next.js UI**
+  - [x] Initialize Next.js project in `frontend/`.
+  - [x] Implement a chat interface component for user/assistant conversation.
+  - [x] Connect UI to `http://backend:8000/api/v1/ask`.
+  - [x] Display an expandable section for "🛠️ Tool Logs" showing which MCP tools were used.
   - *DoD: You can chat with the AI through the browser on `localhost:3000`.*
 
 - [ ] **Task 3.2: Dockerization**
