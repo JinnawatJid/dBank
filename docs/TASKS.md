@@ -36,11 +36,13 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
 - [x] **Task 2.1: API Skeleton**
   - [x] Set up `backend/main.py` with FastAPI (using an enterprise folder structure: `core`, `api`, `db`).
   - [x] Create `POST /ask` endpoint accepting `{ "query": "string" }`.
-  - *DoD: `/docs` Swagger UI is accessible and `/ask` returns a dummy 200 response.*
+  - [x] *Refactored: Implemented robust DB dependency injection (`db.rollback()`), global exception handling, and `/api/v1` versioning.*
+  - *DoD: `/docs` Swagger UI is accessible and `/api/v1/ask` returns a dummy 200 response.*
 
 - [x] **Task 2.2: Implement MCP Server Core**
   - [x] Create `backend/mcp_server.py`.
   - [x] Define the tool registry logic (functions that take parameters and return JSON).
+  - [x] *Refactored: Upgraded tool schema registration to use strict Pydantic models for enterprise-grade validation.*
   - *DoD: You can programmatically call `list_tools()` and see 3 tools registered.*
 
 - [ ] **Task 2.3: Build Tools**
