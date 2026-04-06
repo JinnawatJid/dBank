@@ -14,9 +14,17 @@ services:
       - APP_USER=${APP_USER:-app_user}
       - APP_PASSWORD=${APP_PASSWORD:-app_password}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    networks:
+      - frontend-network
+      - backend-network
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     restart: unless-stopped
 
   frontend:
@@ -29,8 +37,11 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    networks:
+      - frontend-network
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
   db:
@@ -44,6 +55,8 @@ services:
       READONLY_PASSWORD: ${READONLY_PASSWORD}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - backend-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db-init:/docker-entrypoint-initdb.d
@@ -53,6 +66,12 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
+networks:
+  frontend-network:
+    driver: bridge
+  backend-network:
+    driver: bridge
 
 volumes:
   postgres_data:
