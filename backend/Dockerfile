@@ -16,8 +16,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Download the spacy model explicitly if not covered by requirements
 RUN python -m spacy download en_core_web_lg
 
+# Create a non-root user and group
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+
 # Copy application code
 COPY . .
+
+# Change ownership of the application code to the non-root user
+RUN chown -R appuser:appgroup /app
+
+# Switch to the non-root user
+USER appuser
 
 # Expose the port the app runs on
 EXPOSE 8000
