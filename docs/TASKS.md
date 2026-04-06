@@ -51,10 +51,10 @@ Use this file to track your progress during the 3-day sprint. Mark an `[x]` when
   - [x] Implement `kpi.top_root_causes()`. Execute specific aggregate SQL.
   - *DoD: Unit tests for all three tools pass (or manual testing confirms correct JSON output).*
 
-- [ ] **Task 2.4: LLM Orchestration & Guardrails**
-  - [ ] Integrate `google-generativeai` in the `/ask` route.
-  - [ ] Implement a loop: LLM generates response -> If tool requested, parse params -> Call MCP tool -> Send tool result back to LLM.
-  - [ ] Implement a basic regex or library for PII masking on tool outputs.
+- [x] **Task 2.4: LLM Orchestration & Guardrails**
+  - [x] Integrate `google-generativeai` in the `/ask` route.
+  - [x] Implement a loop: LLM generates response -> If tool requested, parse params -> Call MCP tool -> Send tool result back to LLM.
+  - [x] Implement a basic regex or library for PII masking on tool outputs.
   - *DoD: Asking the API "What caused the v1.2 spike?" returns a valid natural language answer grounded in the database/KB.*
 
 ---
