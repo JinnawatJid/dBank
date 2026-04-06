@@ -5,6 +5,7 @@ import json
 import logging
 
 import google.generativeai as genai
+import google.ai.generativelanguage as glm
 
 from backend.api.dependencies import get_db
 from backend.mcp_server import mcp_server
@@ -56,7 +57,8 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
         # 1. Prepare Tools
         # In generativeai==0.3.2, tools are passed when initializing the GenerativeModel.
         tools = convert_mcp_to_gemini_tools(mcp_server._tool_definitions)
-        model = genai.GenerativeModel(model_name='gemini-1.5-pro', tools=tools)
+        # Using a model that supports function calling (we try gemma-3-27b-it, or fallback to returning directly)
+        model = genai.GenerativeModel(model_name='gemini-2.5-flash', tools=tools)
 
         # 2. Start Chat Session
         # The chat session manages the conversation history for us.
@@ -86,8 +88,14 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
             if function_call:
                 tool_name = function_call.name
 
-                # Gemini replaces '.' with '_' in tool names, we need to map it back for mcp_server
-                mcp_tool_name = tool_name.replace("_", ".")
+                # Gemini replaces '.' with '_' in tool names, we need to map it back for mcp_server.
+                # However, since mcp_server registers "kpi.top_root_causes" (which has an underscore AND a dot),
+                # simply replacing all '_' with '.' breaks it. Let's find the original registered name.
+                mcp_tool_name = tool_name
+                for original_tool in mcp_server._tool_definitions:
+                    if original_tool.name.replace(".", "_") == tool_name:
+                        mcp_tool_name = original_tool.name
+                        break
 
                 # Extract arguments as a dictionary
                 # function_call.args is a protobuf Struct, we can cast it to dict
@@ -124,11 +132,11 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
                     })
 
                     # Pass the masked result back to the model as a function_response
-                    current_input = genai.types.ContentDict(
+                    current_input = glm.Content(
                         role="user",
                         parts=[
-                            genai.types.PartDict(
-                                function_response=genai.types.FunctionResponseDict(
+                            glm.Part(
+                                function_response=glm.FunctionResponse(
                                     name=tool_name,
                                     response={"result": masked_result_str}
                                 )
@@ -138,11 +146,11 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
                 except Exception as e:
                     logger.error(f"Error executing tool {mcp_tool_name}: {e}")
                     # Send error back to LLM to retry
-                    current_input = genai.types.ContentDict(
+                    current_input = glm.Content(
                         role="user",
                         parts=[
-                            genai.types.PartDict(
-                                function_response=genai.types.FunctionResponseDict(
+                            glm.Part(
+                                function_response=glm.FunctionResponse(
                                     name=tool_name,
                                     response={"error": str(e)}
                                 )
