@@ -1,4 +1,5 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from backend.db.session import SessionLocal
 import google.generativeai as genai
@@ -10,12 +11,20 @@ logger = logging.getLogger(__name__)
 # Configure Google AI for embeddings
 genai.configure(api_key=settings.GOOGLE_API_KEY)
 
-def sql_query(template: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+class SQLQueryInput(BaseModel):
+    template: str = Field(..., description="The SQL query template with parameterized placeholders.")
+    params: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Dictionary of parameters for the SQL query.")
+
+class KBSearchInput(BaseModel):
+    query: str = Field(..., description="The search query text.")
+    top_k: int = Field(default=5, description="Number of top results to return.")
+
+def sql_query(input_data: SQLQueryInput) -> Dict[str, Any]:
     """
     Executes a read-only SQL query using parameterized execution for safety.
     """
-    if params is None:
-        params = {}
+    template = input_data.template
+    params = input_data.params or {}
 
     session = SessionLocal()
     try:
@@ -29,6 +38,7 @@ def sql_query(template: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
         rows = [dict(row._mapping) for row in result]
         return {"status": "success", "result": rows}
     except Exception as e:
+        session.rollback()
         logger.error(f"Error executing SQL query: {e}")
         return {"status": "error", "message": str(e)}
     finally:
@@ -57,10 +67,12 @@ def _get_embedding(text: str) -> List[float]:
         import random
         return [random.uniform(-1, 1) for _ in range(768)]
 
-def kb_search(query: str, top_k: int = 5) -> Dict[str, Any]:
+def kb_search(input_data: KBSearchInput) -> Dict[str, Any]:
     """
     Searches the knowledge base using vector similarity.
     """
+    query = input_data.query
+    top_k = input_data.top_k
     try:
         embedding = _get_embedding(query)
     except Exception as e:
@@ -84,6 +96,7 @@ def kb_search(query: str, top_k: int = 5) -> Dict[str, Any]:
         rows = [{"filename": row.filename, "content": row.content, "similarity": row.similarity} for row in result]
         return {"status": "success", "result": rows}
     except Exception as e:
+        session.rollback()
         logger.error(f"Error executing KB search: {e}")
         return {"status": "error", "message": str(e)}
     finally:
@@ -112,6 +125,7 @@ def kpi_top_root_causes() -> Dict[str, Any]:
         rows = [dict(row._mapping) for row in result]
         return {"status": "success", "result": rows}
     except Exception as e:
+        session.rollback()
         logger.error(f"Error executing KPI query: {e}")
         return {"status": "error", "message": str(e)}
     finally:
