@@ -89,6 +89,7 @@ jobs:
       run: |
         cd data/dbank_analytics
         dbt deps
+        dbt snapshot
         dbt run
         dbt test
 
