@@ -1,11 +1,11 @@
 product_id,product_name,product_type,launch_date
-PROD-001,"Gonzalez, Carpenter and Williams Loan",Loan,2025-02-12
-PROD-002,Johnson-Miller Investment,Investment,2018-07-29
-PROD-003,Davis-Barton Investment,Investment,2020-06-30
-PROD-004,Lambert-Washington Checking Account,Checking Account,2017-01-27
-PROD-005,"Taylor, Howard and Cowan Credit Card",Credit Card,2017-08-05
-PROD-006,"White, Cook and Espinoza Credit Card",Credit Card,2018-07-17
-PROD-007,"Delacruz, Hogan and Cook Credit Card",Credit Card,2023-07-06
-PROD-008,"Atkinson, Shelton and Gonzalez Credit Card",Credit Card,2019-03-16
-PROD-009,Harper Inc Investment,Investment,2019-07-26
-PROD-010,Washington-Hawkins Loan,Loan,2024-04-04
+PROD-001,Wiley-Burns Checking Account,Checking Account,2016-11-02
+PROD-002,"Adams, Jackson and Williams Checking Account",Checking Account,2024-03-22
+PROD-003,Santos Ltd Loan,Loan,2024-11-02
+PROD-004,Lynch Group Loan,Loan,2024-06-10
+PROD-005,Moore PLC Savings Account,Savings Account,2023-09-22
+PROD-006,"Adams, Smith and Carey Checking Account",Checking Account,2021-05-04
+PROD-007,Smith Ltd Investment,Investment,2019-02-15
+PROD-008,"Mercado, Hall and Robinson Credit Card",Credit Card,2017-03-03
+PROD-009,"Christensen, Cole and Morales Savings Account",Savings Account,2023-06-12
+PROD-010,Smith-Reynolds Checking Account,Checking Account,2017-06-26
