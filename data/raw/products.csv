@@ -1,11 +1,11 @@
 product_id,product_name,product_type,launch_date
-PROD-001,Holland-Johnson Checking Account,Checking Account,2025-02-13
-PROD-002,Simmons-Peterson Credit Card,Credit Card,2019-04-03
-PROD-003,"Patterson, Poole and Russell Credit Card",Credit Card,2023-03-21
-PROD-004,"Rose, Lopez and Coleman Savings Account",Savings Account,2023-09-28
-PROD-005,Roth-Rivas Checking Account,Checking Account,2024-06-25
-PROD-006,Simmons-Griffin Savings Account,Savings Account,2021-06-18
-PROD-007,"Hall, Tate and Malone Savings Account",Savings Account,2021-01-01
-PROD-008,Roach PLC Credit Card,Credit Card,2020-10-11
-PROD-009,Flores-Jimenez Savings Account,Savings Account,2018-04-03
-PROD-010,"Rodgers, Wade and Travis Checking Account",Checking Account,2017-10-07
+PROD-001,Smith-Anthony Checking Account,Checking Account,2018-08-27
+PROD-002,Clark-Reynolds Credit Card,Credit Card,2024-11-23
+PROD-003,"Martinez, Burgess and Jackson Savings Account",Savings Account,2021-03-27
+PROD-004,Sampson and Sons Loan,Loan,2024-07-29
+PROD-005,"Phillips, Delgado and Martinez Loan",Loan,2020-06-25
+PROD-006,Hawkins-Foster Savings Account,Savings Account,2020-07-19
+PROD-007,"Mclaughlin, Ray and Fisher Loan",Loan,2024-09-07
+PROD-008,Baker-Orr Checking Account,Checking Account,2024-06-29
+PROD-009,"Erickson, Cunningham and Mann Credit Card",Credit Card,2016-09-13
+PROD-010,Griffin-Henderson Loan,Loan,2022-01-11

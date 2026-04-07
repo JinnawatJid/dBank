@@ -110,8 +110,13 @@ class ReversiblePIIMasker:
             results = self.analyzer.analyze(
                 text=text,
                 language='en',
-                entities=["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "US_SSN", "CREDIT_CARD", "BANK_ACCOUNT"],
-                score_threshold=0.5
+                # OUTPUT GUARDRAIL: Only scan for high-risk financial PII.
+                # PERSON is intentionally excluded — Presidio's PERSON recognizer
+                # is too broad and produces false positives on legitimate KB content
+                # (e.g., product names like "Google Authenticator", common nouns).
+                # The data we must protect from leaking is structured financial identifiers.
+                entities=["EMAIL_ADDRESS", "PHONE_NUMBER", "US_SSN", "CREDIT_CARD", "BANK_ACCOUNT"],
+                score_threshold=0.6
             )
             detected = list({r.entity_type for r in results})
             if detected:
