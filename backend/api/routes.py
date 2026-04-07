@@ -45,11 +45,19 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
     # Apply Reversible PII Masking to user input first to ensure we never log raw PII
     masked_query, pii_mapping = pii_masker.mask_text(request.query)
 
-    # Check for Prompt Injection on the original query (or masked, depending on preference, but we log the masked one)
-    is_injection, injection_msg = guardrail.detect_injection(request.query)
+    # Check for Prompt Injection on the original query
+    is_injection, _ = guardrail.detect_injection(request.query)
     if is_injection:
         audit.log_event("PROMPT_INJECTION_BLOCKED", session_id, {"masked_query": masked_query})
-        raise HTTPException(status_code=400, detail=injection_msg)
+        return AskResponse(
+            answer=(
+                "I'm sorry, but I'm not able to process that request. "
+                "I'm designed exclusively to assist with dBank customer support inquiries, "
+                "such as account questions, product information, and transaction support. "
+                "Please ask me a question related to your banking needs."
+            ),
+            tools_used=[]
+        )
 
     audit.log_event("USER_REQUEST", session_id, {"masked_query": masked_query})
 
@@ -75,7 +83,8 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
         chat = model.start_chat()
 
         tools_used = []
-        max_turns = 5
+        # Allow enough turns for: schema exploration (2-3) + query retry (1-2) + final answer (1)
+        max_turns = 10
         turn_count = 0
 
         # 3. Initial prompt
@@ -112,15 +121,27 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
 
                 # Extract arguments as a dictionary
                 # function_call.args is a protobuf Struct, we can cast it to dict
-                tool_args = dict(function_call.args)
+                # Extract arguments as a dictionary safely unrolling Protobuf MapComposite objects
+                def _unroll_proto(obj):
+                    if hasattr(obj, 'items'):
+                        return {k: _unroll_proto(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [_unroll_proto(i) for i in obj]
+                    return obj
+                
+                tool_args = _unroll_proto(function_call.args)
 
-                # UNMASK tool arguments before execution so DB can query real names
-                unmasked_tool_args = {}
-                for k, v in tool_args.items():
-                    if isinstance(v, str):
-                        unmasked_tool_args[k] = pii_masker.unmask_text(v, pii_mapping)
-                    else:
-                        unmasked_tool_args[k] = v
+                # UNMASK tool arguments recursively before execution so DB can query real names
+                def _recursive_unmask(obj):
+                    if isinstance(obj, str):
+                        return pii_masker.unmask_text(obj, pii_mapping)
+                    elif isinstance(obj, dict):
+                        return {k: _recursive_unmask(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [_recursive_unmask(i) for i in obj]
+                    return obj
+
+                unmasked_tool_args = _recursive_unmask(tool_args)
 
                 logger.info(f"LLM requested tool: {mcp_tool_name} with args {tool_args}")
                 audit.log_event("TOOL_EXECUTION_REQUEST", session_id, {
@@ -182,6 +203,32 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
 
                 # We need to unmask the final text response before returning to the user
                 final_answer = pii_masker.unmask_text(response_text, pii_mapping)
+
+                # --- DEFENSE-IN-DEPTH: OUTPUT PII GUARDRAIL ---
+                # Industry standard: perform a final PII scan on the outbound response
+                # BEFORE it is returned to the caller. Fail CLOSED — if PII is detected,
+                # block the response entirely and raise a security audit event.
+                detected_pii = pii_masker.scan_for_pii(final_answer)
+                if detected_pii:
+                    audit.log_event("OUTPUT_PII_BLOCKED", session_id, {
+                        "reason": "PII detected in final LLM response before returning to user",
+                        "detected_entity_types": detected_pii,
+                        "tools_used": list(set(tools_used))
+                    })
+                    logger.warning(
+                        f"OUTPUT GUARDRAIL TRIGGERED for session {session_id}. "
+                        f"Detected PII types: {detected_pii}. Response blocked."
+                    )
+                    return AskResponse(
+                        answer=(
+                            "For data privacy and security reasons, I'm unable to display this information directly. "
+                            "Customer contact details (email, phone number) are classified as personally identifiable "
+                            "information (PII) and cannot be returned via this interface. "
+                            "Please access customer records directly through the secure CRM portal."
+                        ),
+                        tools_used=list(set(tools_used))
+                    )
+                # --- END OUTPUT PII GUARDRAIL ---
 
                 audit.log_event("LLM_RESPONSE", session_id, {
                     "masked_answer": response_text,

@@ -96,5 +96,31 @@ class ReversiblePIIMasker:
 
         return unmasked_text
 
+    def scan_for_pii(self, text: str) -> list:
+        """
+        OUTPUT GUARDRAIL: Scans text for any remaining PII entities.
+        Returns a list of detected entity types (e.g. ['EMAIL_ADDRESS', 'PHONE_NUMBER']).
+        Used as a final defense-in-depth check before returning data to the caller.
+        Returns an empty list if no PII is detected (safe to return).
+        """
+        if not text:
+            return []
+
+        try:
+            results = self.analyzer.analyze(
+                text=text,
+                language='en',
+                entities=["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "US_SSN", "CREDIT_CARD", "BANK_ACCOUNT"],
+                score_threshold=0.5
+            )
+            detected = list({r.entity_type for r in results})
+            if detected:
+                logger.warning(f"Output PII scan detected sensitive entities: {detected}")
+            return detected
+        except Exception as e:
+            logger.error(f"Error during output PII scan: {e}")
+            # Fail CLOSED: if scanner errors, treat as if PII was detected
+            return ["SCAN_ERROR"]
+
 # Singleton instance
 pii_masker = ReversiblePIIMasker()

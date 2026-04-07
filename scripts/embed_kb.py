@@ -42,13 +42,13 @@ def chunk_text(text, chunk_size=1000, overlap=150):
 def get_embedding(text):
     """Generates an embedding for the given text using Google's text-embedding-004 model."""
     if not GOOGLE_API_KEY or GOOGLE_API_KEY == 'your_google_api_key_here':
-        # Generate dummy embedding of size 768 to bypass API key errors in CI/CD sandbox
+        # Generate dummy embedding of size 3072 to bypass API key errors in CI/CD sandbox
         import random
-        return [random.uniform(-1, 1) for _ in range(768)]
+        return [random.uniform(-1, 1) for _ in range(3072)]
 
     try:
         result = genai.embed_content(
-            model="models/text-embedding-004",
+            model="models/gemini-embedding-001",
             content=text,
             task_type="retrieval_document"
         )
@@ -56,7 +56,7 @@ def get_embedding(text):
     except Exception as e:
         logger.error(f"Error calling Google AI embedding: {e}")
         import random
-        return [random.uniform(-1, 1) for _ in range(768)]
+        return [random.uniform(-1, 1) for _ in range(3072)]
 
 def main():
     logger.info("Connecting to PostgreSQL database...")
