@@ -80,10 +80,13 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
             response = chat.send_message(current_input)
 
             # Check if the model decided to call a function
-            # In 0.3.2, function calls are usually in response.parts[0].function_call
+            # Gemma models often put text reasoning in parts[0] and the function call in parts[1]
             function_call = None
-            if response.parts and hasattr(response.parts[0], 'function_call') and response.parts[0].function_call:
-                function_call = response.parts[0].function_call
+            if response.parts:
+                for part in response.parts:
+                    if hasattr(part, 'function_call') and part.function_call:
+                        function_call = part.function_call
+                        break
 
             if function_call:
                 tool_name = function_call.name
