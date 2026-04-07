@@ -47,7 +47,7 @@ def get_embedding(text):
         return [random.uniform(-1, 1) for _ in range(768)]
 
     result = genai.embed_content(
-        model="models/text-embedding-004",
+        model="models/embedding-001",
         content=text,
         task_type="retrieval_document"
     )
