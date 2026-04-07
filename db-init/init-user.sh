@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-psql -v ON_ERROR_STOP=1 -h "$POSTGRES_HOST" --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     -- 1. Create schemas and extensions
     CREATE SCHEMA IF NOT EXISTS raw;
     CREATE SCHEMA IF NOT EXISTS marts;
