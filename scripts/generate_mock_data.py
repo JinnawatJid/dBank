@@ -113,8 +113,7 @@ def load_data_to_db():
     db_user = os.getenv("POSTGRES_USER", "dbank_admin")
     db_password = os.getenv("POSTGRES_PASSWORD", "secure_admin_password_here")
 
-    # We use localhost since we are running postgres locally in the sandbox
-    db_host = "127.0.0.1"
+    db_host = os.getenv("POSTGRES_HOST", "127.0.0.1")
     db_port = os.getenv("POSTGRES_PORT", "5432")
 
     try:

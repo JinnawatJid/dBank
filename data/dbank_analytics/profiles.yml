@@ -3,7 +3,7 @@ dbank_analytics:
     dev:
       type: postgres
       threads: 4
-      host: 127.0.0.1
+      host: "{{ env_var('POSTGRES_HOST', '127.0.0.1') }}"
       port: 5432
       user: dbank_dbt
       password: secure_dbt_password_here
