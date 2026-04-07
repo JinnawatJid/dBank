@@ -164,11 +164,13 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
                 # No function call, the model generated a text response!
 
                 # Robustly extract text from all parts as Gemma 4 may return multiple text parts
+                # The "thought process" is often the first part(s), and the final answer is the last part.
                 response_text = ""
                 if response.parts:
-                    for part in response.parts:
-                        if hasattr(part, 'text') and part.text:
-                            response_text += part.text
+                    # Get only the last text part to remove the "thought process"
+                    text_parts = [part.text for part in response.parts if hasattr(part, 'text') and part.text]
+                    if text_parts:
+                        response_text = text_parts[-1]
 
                 # We need to unmask the final text response before returning to the user
                 final_answer = pii_masker.unmask_text(response_text, pii_mapping)
