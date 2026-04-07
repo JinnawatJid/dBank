@@ -46,12 +46,17 @@ def get_embedding(text):
         import random
         return [random.uniform(-1, 1) for _ in range(768)]
 
-    result = genai.embed_content(
-        model="models/embedding-001",
-        content=text,
-        task_type="retrieval_document"
-    )
-    return result['embedding']
+    try:
+        result = genai.embed_content(
+            model="models/embedding-001",
+            content=text,
+            task_type="retrieval_document"
+        )
+        return result['embedding']
+    except Exception as e:
+        logger.error(f"Error calling Google AI embedding: {e}")
+        import random
+        return [random.uniform(-1, 1) for _ in range(768)]
 
 def main():
     logger.info("Connecting to PostgreSQL database...")

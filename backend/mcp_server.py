@@ -73,7 +73,7 @@ mcp_server.register_tool(
 
 mcp_server.register_tool(
     name="kb.search",
-    description="Searches the knowledge base using vector similarity, returning top 5 results by default.",
+    description="Searches the knowledge base using vector similarity. Use this tool specifically to find root causes of individual issues like 'login failures', company policies, and release notes.",
     parameters={
         "type": "OBJECT",
         "properties": {
@@ -87,7 +87,7 @@ mcp_server.register_tool(
 
 mcp_server.register_tool(
     name="kpi.top_root_causes",
-    description="Retrieves aggregate KPIs for support ticket root causes, including volume and average resolution time grouped by issue type.",
+    description="Retrieves high-level aggregate KPI volume for support tickets, grouped by broad issue categories. Do NOT use this to find specific root causes of an individual issue like a login failure.",
     parameters={"type": "OBJECT", "properties": {}},
     func=kpi_top_root_causes
 )
