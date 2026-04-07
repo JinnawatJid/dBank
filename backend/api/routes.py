@@ -112,7 +112,15 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
 
                 # Extract arguments as a dictionary
                 # function_call.args is a protobuf Struct, we can cast it to dict
-                tool_args = dict(function_call.args)
+                # Extract arguments as a dictionary safely unrolling Protobuf MapComposite objects
+                def _unroll_proto(obj):
+                    if hasattr(obj, 'items'):
+                        return {k: _unroll_proto(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [_unroll_proto(i) for i in obj]
+                    return obj
+                
+                tool_args = _unroll_proto(function_call.args)
 
                 # UNMASK tool arguments before execution so DB can query real names
                 unmasked_tool_args = {}

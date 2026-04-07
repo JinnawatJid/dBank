@@ -37,6 +37,9 @@ services:
       - .env
     ports:
       - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - ./scripts:/app/scripts
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432

@@ -53,11 +53,11 @@ def _get_embedding(text: str) -> List[float]:
     """Helper function to get embeddings."""
     if not settings.GOOGLE_API_KEY or settings.GOOGLE_API_KEY == 'your_google_api_key_here':
         import random
-        return [random.uniform(-1, 1) for _ in range(768)]
+        return [random.uniform(-1, 1) for _ in range(3072)]
 
     try:
         result = genai.embed_content(
-            model="models/text-embedding-004",
+            model="models/gemini-embedding-001",
             content=text,
             task_type="retrieval_query"
         )
@@ -65,7 +65,7 @@ def _get_embedding(text: str) -> List[float]:
     except Exception as e:
         logger.error(f"Error calling Google AI embedding: {e}")
         import random
-        return [random.uniform(-1, 1) for _ in range(768)]
+        return [random.uniform(-1, 1) for _ in range(3072)]
 
 def kb_search(input_data: KBSearchInput) -> Dict[str, Any]:
     """
@@ -85,20 +85,16 @@ def kb_search(input_data: KBSearchInput) -> Dict[str, Any]:
 
         # We use the <-> operator for L2 distance (which works well for embeddings normalized or not)
         # However, the user specifically mentioned "<=>" which is cosine similarity in pgvector. Let's use <=>
-        # Note: Since the API Key is throwing 404s for embeddings and we are generating random vectors,
-        # cosine distance is meaningless. The industry standard is to implement a Full-Text Search (Lexical)
-        # fallback using PostgreSQL's native tsvector so the search remains robust.
+        # Reverting to semantic vector similarity (cosine distance <->) since we now use gemini-embedding-001
         sql = text("""
-            SELECT filename, content, 
-                   ts_rank(to_tsvector('english', content), plainto_tsquery('english', :query)) as similarity
+            SELECT filename, content, 1 - (embedding <=> CAST(:embedding AS vector)) as similarity
             FROM public.kb_embeddings
-            WHERE to_tsvector('english', content) @@ plainto_tsquery('english', :query)
-            ORDER BY similarity DESC
+            ORDER BY embedding <=> CAST(:embedding AS vector)
             LIMIT :top_k
         """)
 
-        # We no longer bind :embedding since we're using tsvector on the text instead
-        result = session.execute(sql, {"query": query, "top_k": top_k})
+        # We must bind :embedding since we're using real pgvector logic
+        result = session.execute(sql, {"embedding": embedding_str, "top_k": top_k})
         rows = [{"filename": row.filename, "content": row.content, "similarity": row.similarity} for row in result]
         return {"status": "success", "result": rows}
     except Exception as e:

@@ -11,7 +11,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
         filename VARCHAR(255),
         chunk_index INTEGER,
         content TEXT,
-        embedding vector(768),
+        embedding vector(3072),
         _ingested_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
