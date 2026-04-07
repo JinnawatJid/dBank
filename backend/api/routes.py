@@ -45,11 +45,19 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
     # Apply Reversible PII Masking to user input first to ensure we never log raw PII
     masked_query, pii_mapping = pii_masker.mask_text(request.query)
 
-    # Check for Prompt Injection on the original query (or masked, depending on preference, but we log the masked one)
-    is_injection, injection_msg = guardrail.detect_injection(request.query)
+    # Check for Prompt Injection on the original query
+    is_injection, _ = guardrail.detect_injection(request.query)
     if is_injection:
         audit.log_event("PROMPT_INJECTION_BLOCKED", session_id, {"masked_query": masked_query})
-        raise HTTPException(status_code=400, detail=injection_msg)
+        return AskResponse(
+            answer=(
+                "I'm sorry, but I'm not able to process that request. "
+                "I'm designed exclusively to assist with dBank customer support inquiries, "
+                "such as account questions, product information, and transaction support. "
+                "Please ask me a question related to your banking needs."
+            ),
+            tools_used=[]
+        )
 
     audit.log_event("USER_REQUEST", session_id, {"masked_query": masked_query})
 
