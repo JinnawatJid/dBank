@@ -49,7 +49,7 @@ jobs:
         APP_USER: dbank_app
         APP_PASSWORD: secure_app_password_here
         PGPASSWORD: secure_admin_password_here
-        POSTGRES_HOST: 127.0.0.1
+        PGHOST: 127.0.0.1
       run: |
         # Wait for PostgreSQL to be completely ready
         sleep 5
