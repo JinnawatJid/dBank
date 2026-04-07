@@ -160,11 +160,18 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
             else:
                 # No function call, the model generated a text response!
 
+                # Robustly extract text from all parts as Gemma 4 may return multiple text parts
+                response_text = ""
+                if response.parts:
+                    for part in response.parts:
+                        if hasattr(part, 'text') and part.text:
+                            response_text += part.text
+
                 # We need to unmask the final text response before returning to the user
-                final_answer = pii_masker.unmask_text(response.text, pii_mapping)
+                final_answer = pii_masker.unmask_text(response_text, pii_mapping)
 
                 audit.log_event("LLM_RESPONSE", session_id, {
-                    "masked_answer": response.text,
+                    "masked_answer": response_text,
                     "tools_used": list(set(tools_used))
                 })
 
