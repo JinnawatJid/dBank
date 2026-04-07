@@ -25,7 +25,7 @@ services:
       - ./scripts:/app/scripts
       - ./data:/app/data
     command: >
-      bash -c "pip install dbt-postgres && python scripts/generate_mock_data.py && cd data/dbank_analytics && dbt deps && dbt run"
+      bash -c "pip install dbt-postgres && python scripts/generate_mock_data.py && cd data/dbank_analytics && dbt deps && dbt snapshot && dbt run"
     restart: "no"
 
   backend:
