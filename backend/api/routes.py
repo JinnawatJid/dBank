@@ -198,4 +198,9 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
                 answer="I am currently experiencing high traffic and have hit an API rate limit. Please wait about 1 minute and try asking your question again.",
                 tools_used=list(set(tools_used)) if 'tools_used' in locals() else []
             )
+        if "Internal error encountered" in str(e) or "500" in str(e):
+            return AskResponse(
+                answer="The Google Generative AI API experienced an internal server error while processing the conversation. This can sometimes happen with the Gemma model's function calling feature. Please try asking your question again.",
+                tools_used=list(set(tools_used)) if 'tools_used' in locals() else []
+            )
         raise HTTPException(status_code=500, detail="An error occurred while processing your request.")
