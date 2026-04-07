@@ -16,7 +16,7 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 # Database Configuration
 DB_USER = os.getenv('POSTGRES_USER')
 DB_PASS = os.getenv('POSTGRES_PASSWORD')
-DB_HOST = '127.0.0.1' if os.getenv('POSTGRES_HOST') == 'db' else os.getenv('POSTGRES_HOST', 'localhost')
+DB_HOST = os.getenv('POSTGRES_HOST', '127.0.0.1')
 DB_PORT = os.getenv('POSTGRES_PORT', '5432')
 DB_NAME = os.getenv('POSTGRES_DB')
 APP_USER = os.getenv('APP_USER')
