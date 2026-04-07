@@ -13,9 +13,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download the spacy model explicitly if not covered by requirements
-RUN python -m spacy download en_core_web_lg
-
 # Create a non-root user and group
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
