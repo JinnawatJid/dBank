@@ -1,11 +1,11 @@
 product_id,product_name,product_type,launch_date
-PROD-001,Frazier-Weaver Checking Account,Checking Account,2017-08-09
-PROD-002,Carroll-Bennett Loan,Loan,2017-03-19
-PROD-003,Bradford PLC Investment,Investment,2020-11-23
-PROD-004,Lowe-Foster Credit Card,Credit Card,2022-04-30
-PROD-005,"Dalton, Moreno and Gray Savings Account",Savings Account,2024-01-20
-PROD-006,"Harris, Parks and Cox Savings Account",Savings Account,2021-02-27
-PROD-007,Jackson Group Checking Account,Checking Account,2023-04-21
-PROD-008,Gonzalez Ltd Savings Account,Savings Account,2018-01-11
-PROD-009,Huang-Blackburn Credit Card,Credit Card,2016-10-01
-PROD-010,"Rodriguez, Williams and Harris Savings Account",Savings Account,2021-11-07
+PROD-001,Williams-Miller Savings Account,Savings Account,2018-07-16
+PROD-002,White and Sons Loan,Loan,2019-02-05
+PROD-003,Haas-Gardner Credit Card,Credit Card,2021-06-14
+PROD-004,Mack-Hernandez Investment,Investment,2016-06-21
+PROD-005,Davis Ltd Credit Card,Credit Card,2024-05-07
+PROD-006,Robbins Inc Savings Account,Savings Account,2020-03-20
+PROD-007,"Moore, Acevedo and Park Checking Account",Checking Account,2019-03-08
+PROD-008,Dodson-Parker Checking Account,Checking Account,2016-10-23
+PROD-009,Ward Inc Credit Card,Credit Card,2021-12-30
+PROD-010,Gutierrez Inc Checking Account,Checking Account,2022-09-12

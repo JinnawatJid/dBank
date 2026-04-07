@@ -57,7 +57,7 @@ def _get_embedding(text: str) -> List[float]:
 
     try:
         result = genai.embed_content(
-            model="models/text-embedding-004",
+            model="models/embedding-001",
             content=text,
             task_type="retrieval_query"
         )
@@ -85,10 +85,11 @@ def kb_search(input_data: KBSearchInput) -> Dict[str, Any]:
 
         # We use the <-> operator for L2 distance (which works well for embeddings normalized or not)
         # However, the user specifically mentioned "<=>" which is cosine similarity in pgvector. Let's use <=>
+        # Note: We use CAST(:embedding AS vector) because SQLAlchemy's text() parser gets confused by :embedding::vector
         sql = text("""
-            SELECT filename, content, 1 - (embedding <=> :embedding::vector) as similarity
+            SELECT filename, content, 1 - (embedding <=> CAST(:embedding AS vector)) as similarity
             FROM public.kb_embeddings
-            ORDER BY embedding <=> :embedding::vector
+            ORDER BY embedding <=> CAST(:embedding AS vector)
             LIMIT :top_k
         """)
 

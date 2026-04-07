@@ -4,23 +4,24 @@ FROM python:3.11-slim
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Set PYTHONPATH to allow importing the backend module
+ENV PYTHONPATH=/app
 
-# Download the spacy model explicitly if not covered by requirements
-RUN python -m spacy download en_core_web_lg
+# Copy requirements and install
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Create a non-root user and group
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
 # Copy application code
-COPY . .
+COPY backend /app/backend
 
 # Change ownership of the application code to the non-root user
 RUN chown -R appuser:appgroup /app
@@ -32,4 +33,4 @@ USER appuser
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

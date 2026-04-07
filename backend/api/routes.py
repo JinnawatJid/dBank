@@ -58,7 +58,7 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
         # In generativeai==0.3.2, tools are passed when initializing the GenerativeModel.
         tools = convert_mcp_to_gemini_tools(mcp_server._tool_definitions)
         # Using a model that supports function calling (we try gemma-3-27b-it, or fallback to returning directly)
-        model = genai.GenerativeModel(model_name='gemini-2.5-flash', tools=tools)
+        model = genai.GenerativeModel(model_name='gemma-4-31b-it', tools=tools)
 
         # 2. Start Chat Session
         # The chat session manages the conversation history for us.
@@ -80,10 +80,13 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
             response = chat.send_message(current_input)
 
             # Check if the model decided to call a function
-            # In 0.3.2, function calls are usually in response.parts[0].function_call
+            # Gemma models often put text reasoning in parts[0] and the function call in parts[1]
             function_call = None
-            if response.parts and hasattr(response.parts[0], 'function_call') and response.parts[0].function_call:
-                function_call = response.parts[0].function_call
+            if response.parts:
+                for part in response.parts:
+                    if hasattr(part, 'function_call') and part.function_call:
+                        function_call = part.function_call
+                        break
 
             if function_call:
                 tool_name = function_call.name
@@ -160,11 +163,18 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
             else:
                 # No function call, the model generated a text response!
 
+                # Robustly extract text from all parts as Gemma 4 may return multiple text parts
+                response_text = ""
+                if response.parts:
+                    for part in response.parts:
+                        if hasattr(part, 'text') and part.text:
+                            response_text += part.text
+
                 # We need to unmask the final text response before returning to the user
-                final_answer = pii_masker.unmask_text(response.text, pii_mapping)
+                final_answer = pii_masker.unmask_text(response_text, pii_mapping)
 
                 audit.log_event("LLM_RESPONSE", session_id, {
-                    "masked_answer": response.text,
+                    "masked_answer": response_text,
                     "tools_used": list(set(tools_used))
                 })
 
@@ -183,4 +193,14 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
 
     except Exception as e:
         logger.error(f"Error in ask_question orchestration: {e}", exc_info=True)
+        if "Quota exceeded" in str(e) or "429" in str(e):
+            return AskResponse(
+                answer="I am currently experiencing high traffic and have hit an API rate limit. Please wait about 1 minute and try asking your question again.",
+                tools_used=list(set(tools_used)) if 'tools_used' in locals() else []
+            )
+        if "Internal error encountered" in str(e) or "500" in str(e):
+            return AskResponse(
+                answer="The Google Generative AI API experienced an internal server error while processing the conversation. This can sometimes happen with the Gemma model's function calling feature. Please try asking your question again.",
+                tools_used=list(set(tools_used)) if 'tools_used' in locals() else []
+            )
         raise HTTPException(status_code=500, detail="An error occurred while processing your request.")

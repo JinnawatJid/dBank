@@ -1,18 +1,48 @@
 version: '3.8'
 
 services:
+  dbt:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: dbank_dbt_init
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - APP_USER=${APP_USER}
+      - APP_PASSWORD=${APP_PASSWORD}
+      - DBT_USER=${DBT_USER}
+      - DBT_PASSWORD=${DBT_PASSWORD}
+    networks:
+      - backend-network
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./scripts:/app/scripts
+      - ./data:/app/data
+    command: >
+      bash -c "pip install dbt-postgres && python scripts/generate_mock_data.py && cd data/dbank_analytics && dbt deps && dbt run --select staging && dbt snapshot && dbt run && cd ../.. && python scripts/embed_kb.py"
+    restart: "no"
+
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: ./backend/Dockerfile
     container_name: dbank_backend
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     environment:
-      - DB_HOST=db
-      - DB_PORT=5432
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB}
-      - APP_USER=${APP_USER:-app_user}
-      - APP_PASSWORD=${APP_PASSWORD:-app_password}
+      - APP_USER=${APP_USER}
+      - APP_PASSWORD=${APP_PASSWORD}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     networks:
       - frontend-network
@@ -20,6 +50,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      dbt:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 10s
@@ -31,12 +63,14 @@ services:
     build:
       context: ./frontend
       args:
-        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+        NEXT_PUBLIC_API_URL: http://localhost:8000
     container_name: dbank_frontend
+    env_file:
+      - .env
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
     networks:
       - frontend-network
     depends_on:
@@ -47,12 +81,16 @@ services:
   db:
     image: pgvector/pgvector:pg15
     container_name: dbank_postgres
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      READONLY_USER: ${READONLY_USER}
-      READONLY_PASSWORD: ${READONLY_PASSWORD}
+      APP_USER: ${APP_USER}
+      APP_PASSWORD: ${APP_PASSWORD}
+      DBT_USER: ${DBT_USER}
+      DBT_PASSWORD: ${DBT_PASSWORD}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     networks:
