@@ -10,8 +10,8 @@
 
 **Objective:** Hook the CTO immediately by showing your structured thinking process. Prove that you translate business problems into technical architectures, not just blindly writing code.
 
-*   **Greeting:** "สวัสดีครับ วันนี้ผมจะมานำเสนอโปรเจกต์ Deep Insights Copilot ครับ ก่อนที่เราจะไปดูเรื่อง Architecture หรือ Live Demo ผมอยากขอแชร์กระบวนการคิด (Thought Process) ของผมสักนิดนึงครับ"
-*   **The Approach:** "สิ่งแรกที่ผมทำหลังจากได้รับ Assignment คือการอ่านอย่างตั้งใจและตีความโจทย์ให้แตกครับ ผมมองว่าโจทย์ไม่ได้ให้เราแค่ 'เขียนโค้ด' แต่ต้องการแก้ปัญหาทางธุรกิจ"
+*   **Greeting:** "สวัสดีครับ วันนี้ผมจะมานำเสนอโปรเจกต์ Deep Insights Copilot ครับ ก่อนที่เราจะไปดูเรื่อง Architecture หรือ Live Demo ผมอยากขอแชร์กระบวนการคิด ของผมสักนิดนึงครับ"
+*   **The Approach:** "สิ่งแรกที่ผมทำหลังจากได้รับ Assignment คือการอ่านอย่างตั้งใจและตีความโจทย์ให้แตกครับ"
 *   **Requirement Analysis (Referencing the PDF):** "ถ้าเรามาดูใน PDF assignment ไปพร้อมๆ กัน ผมได้ไฮไลท์และทำความเข้าใจโจทย์โดยแบ่งเป็น 4 แกนหลัก (Pillars) ตาม Standard Engineering Approach ครับ:"
     1.  **Business Requirements (The "Why"):**
         *   *Highlight:* "Reduce time for Operation support team by 80% and deflect 25% repeat-question tickets."
