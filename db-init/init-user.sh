@@ -12,6 +12,8 @@ psql -v ON_ERROR_STOP=1 -h "$POSTGRES_HOST" --username "$POSTGRES_USER" --dbname
     DO \$\$ BEGIN
         IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DBT_USER') THEN
             CREATE USER $DBT_USER WITH PASSWORD '$DBT_PASSWORD';
+        ELSE
+            ALTER USER $DBT_USER WITH PASSWORD '$DBT_PASSWORD';
         END IF;
     END \$\$;
     GRANT CONNECT ON DATABASE $POSTGRES_DB TO $DBT_USER;
@@ -29,6 +31,8 @@ psql -v ON_ERROR_STOP=1 -h "$POSTGRES_HOST" --username "$POSTGRES_USER" --dbname
     DO \$\$ BEGIN
         IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$APP_USER') THEN
             CREATE USER $APP_USER WITH PASSWORD '$APP_PASSWORD';
+        ELSE
+            ALTER USER $APP_USER WITH PASSWORD '$APP_PASSWORD';
         END IF;
     END \$\$;
     GRANT CONNECT ON DATABASE $POSTGRES_DB TO $APP_USER;
