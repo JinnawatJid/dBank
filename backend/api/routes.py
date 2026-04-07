@@ -58,7 +58,7 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
         # In generativeai==0.3.2, tools are passed when initializing the GenerativeModel.
         tools = convert_mcp_to_gemini_tools(mcp_server._tool_definitions)
         # Using a model that supports function calling (we try gemma-3-27b-it, or fallback to returning directly)
-        model = genai.GenerativeModel(model_name='gemini-2.5-flash', tools=tools)
+        model = genai.GenerativeModel(model_name='gemma-3-4b-it', tools=tools)
 
         # 2. Start Chat Session
         # The chat session manages the conversation history for us.
@@ -183,4 +183,9 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
 
     except Exception as e:
         logger.error(f"Error in ask_question orchestration: {e}", exc_info=True)
+        if "Quota exceeded" in str(e) or "429" in str(e):
+            return AskResponse(
+                answer="I am currently experiencing high traffic and have hit an API rate limit. Please wait about 1 minute and try asking your question again.",
+                tools_used=list(set(tools_used)) if 'tools_used' in locals() else []
+            )
         raise HTTPException(status_code=500, detail="An error occurred while processing your request.")
