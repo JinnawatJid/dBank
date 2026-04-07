@@ -10,15 +10,18 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
+# Set PYTHONPATH to allow importing the backend module
+ENV PYTHONPATH=/app
+
 # Copy requirements and install
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Create a non-root user and group
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
 # Copy application code
-COPY . .
+COPY backend /app/backend
 
 # Change ownership of the application code to the non-root user
 RUN chown -R appuser:appgroup /app
@@ -30,4 +33,4 @@ USER appuser
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
