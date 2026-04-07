@@ -33,3 +33,22 @@ This document records the specific issues encountered and resolved during the fi
 ### 4.2 Postgres Connection Refused During Startup Initialization
 * **The Issue:** The Postgres container skipped creating the database users, and logs showed `psql: error: connection to server at "db" (172.19.0.2), port 5432 failed: Connection refused`. This led to application authentication failures down the line.
 * **The Fix:** During the `docker-entrypoint-initdb.d` initialization phase, PostgreSQL runs in local/single-user mode and does not yet listen for TCP/IP network connections. The `psql` command in the initialization scripts was using `-h "$POSTGRES_HOST"`, attempting to connect over the network. We removed the `-h "$POSTGRES_HOST"` argument from `db-init/init-user.sh` and `db-init/init-kb-schema.sh` so that `psql` correctly uses the local Unix socket instead.
+
+## 5. Automated Data Pipeline Orchestration
+
+### 5.1 Missing Database Tables (`relation "marts.fact_tickets" does not exist`)
+* **The Issue:** Even after the PostgreSQL database and user roles were successfully initialized, the backend LLM tool executions would fail with `psycopg2.errors.UndefinedTable: relation "marts.fact_tickets" does not exist`. The raw data and dbt transformations had not been executed inside the Docker environment.
+* **The Fix:** We introduced a new, ephemeral `dbank_dbt_init` container in `docker-compose.yml`. This container strictly orchestrates the data loading and transformation pipelines. Furthermore, the `backend` container is configured with `depends_on: dbank_dbt_init: condition: service_completed_successfully`, eliminating race conditions by guaranteeing the backend only boots after all database tables are fully populated.
+
+### 5.2 Resolving `dbt` and Data Generator Connection Errors
+* **The Issue:** The `dbt_init` container threw `Connection refused` errors when attempting to run `generate_mock_data.py` and `dbt`. Both were hardcoded to connect to `127.0.0.1`. Inside the container, this resolved to the local loopback interface rather than the PostgreSQL `db` container.
+* **The Fix:** We updated `scripts/generate_mock_data.py` and `data/dbank_analytics/profiles.yml` to dynamically resolve the `POSTGRES_HOST` environment variable, seamlessly pointing to the `db` container over the Docker network while maintaining fallback compatibility for local sandbox testing.
+
+### 5.3 Strictly Enforcing dbt DAG Execution Order
+* **The Issue:** The `dbt_init` container failed during `dbt snapshot` because the `snapshots.customers_snapshot` relation relied on `marts.stg_customers`, which hadn't been built yet.
+* **The Fix:** Slowly Changing Dimensions (SCD2) strictly require the staging layer to exist before taking snapshots. We updated the orchestration command to execute the pipeline in the correct topological order:
+  1. Generate raw data (`python scripts/generate_mock_data.py`)
+  2. Build staging views (`dbt run --select staging`)
+  3. Execute snapshots (`dbt snapshot`)
+  4. Build fact and dimension marts (`dbt run`)
+  5. Generate knowledge base vector embeddings (`python scripts/embed_kb.py`)
