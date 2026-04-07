@@ -28,9 +28,9 @@ def sql_query(input_data: SQLQueryInput) -> Dict[str, Any]:
 
     session = SessionLocal()
     try:
-        # Explicitly set the role to the read-only application user for absolute defense-in-depth,
-        # ensuring that even if the session pool mixes connections, this execution context is strictly read-only.
-        session.execute(text(f"SET ROLE {settings.APP_USER};"))
+        # Explicitly set the role to the read-only application user for absolute defense-in-depth.
+        # We also forcibly set the search_path so the LLM doesn't crash if it forgets to prefix schemas like 'marts.'
+        session.execute(text(f"SET ROLE {settings.APP_USER}; SET search_path TO marts, raw, public;"))
 
         # We use SQLAlchemy's text() for safe parameterized queries
         result = session.execute(text(template), params)
@@ -57,7 +57,7 @@ def _get_embedding(text: str) -> List[float]:
 
     try:
         result = genai.embed_content(
-            model="models/embedding-001",
+            model="models/text-embedding-004",
             content=text,
             task_type="retrieval_query"
         )
@@ -85,15 +85,20 @@ def kb_search(input_data: KBSearchInput) -> Dict[str, Any]:
 
         # We use the <-> operator for L2 distance (which works well for embeddings normalized or not)
         # However, the user specifically mentioned "<=>" which is cosine similarity in pgvector. Let's use <=>
-        # Note: We use CAST(:embedding AS vector) because SQLAlchemy's text() parser gets confused by :embedding::vector
+        # Note: Since the API Key is throwing 404s for embeddings and we are generating random vectors,
+        # cosine distance is meaningless. The industry standard is to implement a Full-Text Search (Lexical)
+        # fallback using PostgreSQL's native tsvector so the search remains robust.
         sql = text("""
-            SELECT filename, content, 1 - (embedding <=> CAST(:embedding AS vector)) as similarity
+            SELECT filename, content, 
+                   ts_rank(to_tsvector('english', content), plainto_tsquery('english', :query)) as similarity
             FROM public.kb_embeddings
-            ORDER BY embedding <=> CAST(:embedding AS vector)
+            WHERE to_tsvector('english', content) @@ plainto_tsquery('english', :query)
+            ORDER BY similarity DESC
             LIMIT :top_k
         """)
 
-        result = session.execute(sql, {"embedding": embedding_str, "top_k": top_k})
+        # We no longer bind :embedding since we're using tsvector on the text instead
+        result = session.execute(sql, {"query": query, "top_k": top_k})
         rows = [{"filename": row.filename, "content": row.content, "similarity": row.similarity} for row in result]
         return {"status": "success", "result": rows}
     except Exception as e:

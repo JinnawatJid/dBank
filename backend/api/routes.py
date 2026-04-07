@@ -57,8 +57,18 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
         # 1. Prepare Tools
         # In generativeai==0.3.2, tools are passed when initializing the GenerativeModel.
         tools = convert_mcp_to_gemini_tools(mcp_server._tool_definitions)
-        # Using a model that supports function calling (we try gemma-3-27b-it, or fallback to returning directly)
-        model = genai.GenerativeModel(model_name='gemma-4-31b-it', tools=tools)
+        # Using a model that supports function calling
+        system_instruction = (
+            "You are an expert dBank customer support AI. Provide clear, concise answers formatted in markdown. "
+            "CRITICAL RULES: Never explicitly mention the names of tools you use, never mention the filenames of the "
+            "documents you read (e.g., 'login_issues.md'), and never explain your internal search process to the user. "
+            "Present the final answer confidently as your own knowledge."
+        )
+        model = genai.GenerativeModel(
+            model_name='gemma-4-31b-it', 
+            tools=tools,
+            system_instruction=system_instruction
+        )
 
         # 2. Start Chat Session
         # The chat session manages the conversation history for us.
@@ -69,8 +79,8 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
         turn_count = 0
 
         # 3. Initial prompt
-        system_prompt = "You are a helpful banking support assistant. Answer the user's questions by using the provided tools."
-        current_input = f"{system_prompt}\nUser: {masked_query}"
+        # We only pass the user query here. The strict persona is handled by system_instruction.
+        current_input = f"User: {masked_query}"
 
         # 4. Orchestration Loop
         while turn_count < max_turns:
