@@ -1,0 +1,28 @@
+Subject: Submission: Deep Insights Copilot - 5-Days Data Deep Lab Exam
+
+Hi Joey,
+
+Please find my submission for the "Deep Insights Copilot" project attached. [Insert GitHub Link or indicate Zipped Folder is attached]
+
+Overall, the core architecture successfully implements the requirements specified in the exam brief. Here is a summary of what has been accomplished:
+
+**Completed Features & Alignments:**
+*   **Data Layer:** Successfully implemented `dbt` transformations to model the raw synthetic data (Customers, Tickets, Logins, Products) into a star schema (`marts`) within PostgreSQL.
+*   **Knowledge Retrieval Layer:** Markdown documents are successfully chunked and stored in a `pgvector` database. The `kb.search` MCP tool is implemented to retrieve these chunks.
+*   **Core API & GenAI Orchestration:** Built the FastAPI `/ask` endpoint that integrates with Google AI (`gemma-4-31b-it`). Reversible PII Masking (via Microsoft Presidio) is correctly implemented to ensure no sensitive data is sent to the LLM.
+*   **MCP Tools:** Developed the required tools (`sql.query`, `kb.search`, `kpi.top_root_causes`). The `sql.query` tool correctly enforces a read-only PostgreSQL role (`APP_USER`) and uses parameterized execution to prevent injection.
+*   **DevOps:** The entire stack is containerized using multi-stage Docker builds orchestrated by `docker-compose`, and CI/CD pipelines are configured via GitHub Actions.
+
+**Known Issues & Flaws (Identified during testing logs):**
+While the architecture is robust, there are a few integration flaws during the LLM's active reasoning loop that I wanted to transparently document:
+
+1.  **Embedding Model 404 Error:** The `kb.search` tool occasionally encounters a `404 Not Found` error when calling Google's `models/text-embedding-004`. The backend currently catches this exception and generates dummy vectors as a fallback so the app doesn't crash, but this results in suboptimal semantic search matches.
+2.  **LLM Schema Hallucination:** When using the `sql.query` tool, the LLM often assumes a flat table structure (e.g., trying to query `SELECT COUNT(*) FROM customers`) instead of querying the transformed dbt models (e.g., `marts.dim_customers`). While the LLM does attempt to self-correct by querying `information_schema.tables`, it occasionally exhausts the maximum conversation turns before formulating the correct query.
+3.  **Max Turn Limit Exceeded:** Because of the two issues above, the generative AI orchestration loop sometimes hits the maximum turn limit (5 turns) while retrying tool calls, resulting in the fallback response: "I'm sorry, I couldn't find a complete answer after several attempts."
+
+Thank you for the opportunity to work on this exciting challenge. I look forward to your feedback.
+
+Best regards,
+
+[Your Name]
+[Your Contact Information]
