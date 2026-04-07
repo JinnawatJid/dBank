@@ -58,7 +58,7 @@ def ask_question(request: AskRequest, db: Session = Depends(get_db)):
         # In generativeai==0.3.2, tools are passed when initializing the GenerativeModel.
         tools = convert_mcp_to_gemini_tools(mcp_server._tool_definitions)
         # Using a model that supports function calling (we try gemma-3-27b-it, or fallback to returning directly)
-        model = genai.GenerativeModel(model_name='gemma-3-4b-it', tools=tools)
+        model = genai.GenerativeModel(model_name='gemma-4-31b-it', tools=tools)
 
         # 2. Start Chat Session
         # The chat session manages the conversation history for us.
