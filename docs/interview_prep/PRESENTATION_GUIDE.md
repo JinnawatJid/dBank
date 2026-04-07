@@ -12,20 +12,14 @@
 
 *   **Greeting:** "สวัสดีครับ วันนี้ผมจะมานำเสนอโปรเจกต์ Deep Insights Copilot ครับ ก่อนที่เราจะไปดูเรื่อง Architecture หรือ Live Demo ผมอยากขอแชร์กระบวนการคิด ของผมสักนิดนึงครับ"
 *   **The Approach:** "สิ่งแรกที่ผมทำหลังจากได้รับ Assignment คือการอ่านอย่างตั้งใจและตีความโจทย์ให้แตกครับ"
-*   **Requirement Analysis (Referencing the PDF):** "ถ้าเรามาดูใน PDF assignment ไปพร้อมๆ กัน ผมได้ไฮไลท์และทำความเข้าใจโจทย์โดยแบ่งเป็น 4 แกนหลัก (Pillars) ตาม Standard Engineering Approach ครับ:"
-    1.  **Business Requirements (The "Why"):**
-        *   *Highlight:* "Reduce time for Operation support team by 80% and deflect 25% repeat-question tickets."
-        *   *Conclusion:* "ผมตีโจทย์ว่าระบบนี้คือ Enterprise Tool สำหรับ User ระดับ 40 ล้านคน ความถูกต้อง (Accuracy) สำคัญที่สุด คำตอบต้อง Grounded กับ Data จริงๆ"
-    2.  **Guardrails & Security (The Constraints):**
-        *   *Highlight:* "read-only DB access; PII must be masked; every tool call must be parameterized."
-        *   *Conclusion:* "นี่คือหัวใจของงาน Corporate Banking ผมรู้ทันทีว่าจะให้ LLM เขียน SQL ไปรันตรงๆ ไม่ได้ ผมจึงต้องทำเรื่อง Reversible PII Masking แบบ Tokenization และบังคับใช้ Parameterized queries เพื่อป้องกัน SQL Injection"
-    3.  **Core Architecture (The "How"):**
-        *   *Highlight:* "Postgres, dbt, pgvector, MCP server."
-        *   *Conclusion:* "ผมแบ่งงานเป็น Layer ชัดเจน ใช้ dbt เพื่อทำ Data Quality Testing (Star Schema) ก่อนที่ LLM จะเห็นข้อมูล ใช้ pgvector เพื่อรวม Relational & Vector ให้อยู่ใน Ecosystem เดียวกัน และเขียน Custom MCP Server เพื่อคุม Execution Flow และความปลอดภัยแบบเบ็ดเสร็จ"
-    4.  **Production Readiness (The Delivery):**
-        *   *Highlight:* "Deployment-grade, containerization, CI."
-        *   *Conclusion:* "ผมตั้งเป้าว่า 'It must be runnable everywhere' จึงทำ Docker Compose ที่ Spin-up ทุกอย่างจบใน Command เดียว และครอบด้วย GitHub Actions ครับ"
-*   **Transition:** "จากการวิเคราะห์ 4 แกนนี้ ผมนำไปแตกเป็น 3-Day Sprint Plan เพื่อให้มั่นใจว่าจะส่งมอบ MVP ได้ทันเวลาครับ... ต่อไปเรามาเจาะลึกที่ตัว Architecture กันครับ"
+*   **Requirement Analysis (Referencing the PDF):** "ถ้าเรามาดูใน PDF assignment ในหัวข้อ Scenario ไปพร้อมๆ กันนะครับ พอผมอ่านส่วนแรก ผมก็จับใจความได้ว่า เราเป็น Operation support team ที่มีปัญหาคือ Ticket เปิดมาเยอะมาก และเราต้องการตัวช่วยในเรื่องนี้ ซึ่งก็คือระบบ 'Deep Insights Copilot' โดยเจ้าระบบนี้จะต้องมีความสามารถหลัก 2 อย่างครับ:"
+    1.  **"1. answer natural-language questions grounded in company data/docs"**
+        *   "คือต้องตอบคำถามโดยอ้างอิงจากข้อมูลและเอกสารจากทางบริษัท ตรงนี้ผมปิ๊งขึ้นมาทันทีว่า นี่แหละคือคอนเซปต์และ Use Case ของการปรับใช้ **RAG (Retrieval-Augmented Generation)** ในธุรกิจจริง เพื่อไม่ให้ AI มั่วคำตอบ (Hallucination)"
+    2.  **"2. run safe, parameterized actions (SQL, KPI queries) via MCP tools"**
+        *   "ก็คือ RAG ตัวนี้ต้องมีความสามารถในการรันคำสั่ง SQL หรือดึงข้อมูล KPI ผ่านสิ่งที่เรียกว่า MCP Tools... สารภาพตามตรงครับว่าตอนที่อ่านเจอคำนี้ ผมยังไม่มั่นใจ 100% ว่า MCP คืออะไร รู้แค่ว่าเป็นคำศัพท์ที่เพิ่งเริ่มได้ยินบ่อยมาก ผมเลยรีบวงกลมตัวแดงๆ และขอโน้ตไว้ก่อนเลยว่า นี่คือเทคโนโลยีหลักที่ผมต้องไป Research เพิ่มเติมทันที เพื่อนำมาใช้เป็น Core Architecture ของโปรเจกต์นี้ครับ"
+
+*   **Deeper Analysis:** "จากจุดเริ่มต้นนั้น ผมก็อ่านเจาะลึกลงไปในเรื่อง Security Guardrails (ต้องบังคับใช้ Parameterized SQL และทำ PII Masking) และเรื่อง Data Layer (ต้องใช้ Postgres + dbt) ซึ่งทั้งหมดนี้..."
+*   **Transition:** "...ผมได้นำไป Research (โดยเฉพาะเรื่อง MCP) และนำ Requirement ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อส่งมอบ MVP ให้ทันเวลาครับ ซึ่งเดี๋ยวเราจะไปดู Architecture ผลลัพธ์กันครับ"
 
 ---
 
