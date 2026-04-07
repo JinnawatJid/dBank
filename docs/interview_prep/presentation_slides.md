@@ -31,30 +31,71 @@ Role: Mission Engineer Candidate
 ## The dBank Solution Architecture
 **Containerized, Secure-by-Design**
 
-*   **Frontend (Next.js):** Modern, SSR-optimized chat interface.
-*   **Backend (FastAPI):** High-performance orchestration layer.
-*   **MCP (Model Context Protocol):** Isolated, strictly typed tools.
-*   **Unified Data Store (Postgres + pgvector + dbt):** Single ACID-compliant database handling relational data and vector embeddings.
+<div style="display: flex; justify-content: space-between; align-items: center;">
+<div style="width: 45%;">
+
+*   **Frontend:** Next.js Chat UI
+*   **Backend:** FastAPI Orchestrator
+*   **Intelligence:** Gemma via MCP
+*   **Data Store:** PostgreSQL + pgvector + dbt
+
+</div>
+<div style="width: 50%;">
+
+```mermaid
+graph TD
+    UI[Next.js Frontend] --> API[FastAPI Backend]
+    API <--> LLM[Google AI/Gemma]
+    API --> MCP[MCP Tool Server]
+    MCP --> DB[(PostgreSQL + pgvector)]
+    dbt[dbt Core] --> DB
+```
+
+</div>
+</div>
 
 ---
 
 ## Innovation 1: Reversible PII Masking
 **Solving the Privacy Paradigm via Tokenization**
 
-1.  **Interception:** Microsoft Presidio detects standard & custom banking entities (e.g., `BANK_ACCOUNT`).
-2.  **Tokenization:** PII is replaced with UUID placeholders (e.g., `<PERSON_1>`).
-3.  **Reversible Mapping:** Ephemeral in-memory dictionary maps tokens back to reality during backend tool execution.
-4.  **Result:** The external LLM never processes raw PII, while the system retains exact-match query capabilities.
+```mermaid
+sequenceDiagram
+    participant User
+    participant Backend
+    participant LLM
+    participant DB
+    User->>Backend: Find John Doe
+    Backend->>Backend: Map "John Doe" -> <PERSON_1>
+    Backend->>LLM: Find <PERSON_1>
+    LLM-->>Backend: Tool(sql.query, "<PERSON_1>")
+    Backend->>Backend: Unmap <PERSON_1> -> "John Doe"
+    Backend->>DB: SELECT ... WHERE name='John Doe'
+```
+
+*   **Result:** The external LLM never processes raw PII, while the system retains exact-match query capabilities.
 
 ---
 
 ## Innovation 2: Defense in Depth SQL Execution
 **Agentic Capabilities Without Compromise**
 
-*   **Least Privilege:** MCP server uses a restricted `app_user` role (Read-Only / `SELECT`).
-*   **Schema Segregation:** Access is limited to the dbt-transformed `marts` schema—never raw data.
-*   **Parameterization:** SQLAlchemy `text()` strictly binds parameters, neutralizing LLM-generated SQL injection vectors.
-*   **Input Guardrails:** Pydantic models validate all tool requests prior to execution.
+<div style="display: flex; gap: 20px;">
+<div style="flex: 1;">
+
+### 1. Infrastructure Layer
+*   **Least Privilege:** `app_user` role (Read-Only / `SELECT`).
+*   **Schema Segregation:** Access limited to `marts` schema—never raw data.
+
+</div>
+<div style="flex: 1;">
+
+### 2. Application Layer
+*   **Parameterization:** SQLAlchemy `text()` neutralizes SQL injection.
+*   **Input Guardrails:** Pydantic models validate all MCP tool requests.
+
+</div>
+</div>
 
 ---
 
