@@ -23,3 +23,13 @@ This document records the specific issues encountered and resolved during the fi
 ### 3.1 `ModuleNotFoundError: No module named 'backend'`
 * **The Issue:** The backend container crashed with a stack trace indicating it could not import from `backend.api.routes`. This occurred because the `backend/Dockerfile` `WORKDIR` was `/app`, and the `COPY . .` command stripped the `backend/` parent directory. Thus, Python could not resolve absolute imports relying on the `backend` namespace.
 * **The Fix:** We updated the `docker-compose.yml` build context for the backend to use the project root directory (`.`). In `backend/Dockerfile`, we adjusted the copy command to `COPY backend /app/backend`, set `ENV PYTHONPATH=/app`, and updated the start command to `uvicorn backend.main:app`. This preserved the module structure and allowed Python to resolve imports perfectly.
+
+## 4. Database Initialization Issues
+
+### 4.1 Missing Executable Files (Windows Line Endings)
+* **The Issue:** The Postgres container failed to start and threw the error `/docker-entrypoint-initdb.d/init-kb-schema.sh: cannot execute: required file not found`.
+* **The Fix:** When cloned on Windows, git might check out the `.sh` files with CRLF line endings. The Linux Docker container cannot execute shell scripts with CRLF endings. We explicitly enforced LF line endings using `dos2unix` on all files in `db-init/` and ensured `.gitattributes` contained `*.sh text eol=lf`.
+
+### 4.2 Postgres Connection Refused During Startup Initialization
+* **The Issue:** The Postgres container skipped creating the database users, and logs showed `psql: error: connection to server at "db" (172.19.0.2), port 5432 failed: Connection refused`. This led to application authentication failures down the line.
+* **The Fix:** During the `docker-entrypoint-initdb.d` initialization phase, PostgreSQL runs in local/single-user mode and does not yet listen for TCP/IP network connections. The `psql` command in the initialization scripts was using `-h "$POSTGRES_HOST"`, attempting to connect over the network. We removed the `-h "$POSTGRES_HOST"` argument from `db-init/init-user.sh` and `db-init/init-kb-schema.sh` so that `psql` correctly uses the local Unix socket instead.

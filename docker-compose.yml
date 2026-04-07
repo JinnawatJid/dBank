@@ -1,6 +1,33 @@
 version: '3.8'
 
 services:
+  dbt:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: dbank_dbt_init
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - APP_USER=${APP_USER}
+      - APP_PASSWORD=${APP_PASSWORD}
+      - DBT_USER=${DBT_USER}
+      - DBT_PASSWORD=${DBT_PASSWORD}
+    networks:
+      - backend-network
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./scripts:/app/scripts
+      - ./data:/app/data
+    command: >
+      bash -c "pip install dbt-postgres && python scripts/generate_mock_data.py && cd data/dbank_analytics && dbt deps && dbt run"
+    restart: "no"
+
   backend:
     build:
       context: .
@@ -23,6 +50,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      dbt:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 10s
