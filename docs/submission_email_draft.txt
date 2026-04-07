@@ -9,16 +9,18 @@ Overall, the core architecture successfully implements the requirements specifie
 **Completed Features & Alignments:**
 *   **Data Layer:** Successfully implemented `dbt` transformations to model the raw synthetic data (Customers, Tickets, Logins, Products) into a star schema (`marts`) within PostgreSQL.
 *   **Knowledge Retrieval Layer:** Markdown documents are successfully chunked and stored in a `pgvector` database. The `kb.search` MCP tool is implemented to retrieve these chunks.
-*   **Core API & GenAI Orchestration:** Built the FastAPI `/ask` endpoint that integrates with Google AI (`gemma-4-31b-it`). Reversible PII Masking (via Microsoft Presidio) is correctly implemented to ensure no sensitive data is sent to the LLM.
+*   **Core API & GenAI Orchestration:** Built the FastAPI `/ask` endpoint that integrates with Google AI (`gemma-4-31b-it`) using the raw SDK. Reversible PII Masking (via Microsoft Presidio) is correctly implemented to ensure no sensitive data is sent to the LLM.
 *   **MCP Tools:** Developed the required tools (`sql.query`, `kb.search`, `kpi.top_root_causes`). The `sql.query` tool correctly enforces a read-only PostgreSQL role (`APP_USER`) and uses parameterized execution to prevent injection.
 *   **DevOps:** The entire stack is containerized using multi-stage Docker builds orchestrated by `docker-compose`, and CI/CD pipelines are configured via GitHub Actions.
 
-**Known Issues & Flaws (Identified during testing logs):**
-While the architecture is robust, there are a few integration flaws during the LLM's active reasoning loop that I wanted to transparently document:
+**Known Issues & Architectural Reflections:**
+During testing, I observed some flaws in the LLM orchestration loop. I chose to build the LLM integration from scratch using the raw Google GenAI SDK to deeply understand the mechanics. However, this exposed a few issues that an orchestration framework (like LangChain) typically handles out-of-the-box:
 
-1.  **Embedding Model 404 Error:** The `kb.search` tool occasionally encounters a `404 Not Found` error when calling Google's `models/text-embedding-004`. The backend currently catches this exception and generates dummy vectors as a fallback so the app doesn't crash, but this results in suboptimal semantic search matches.
-2.  **LLM Schema Hallucination:** When using the `sql.query` tool, the LLM often assumes a flat table structure (e.g., trying to query `SELECT COUNT(*) FROM customers`) instead of querying the transformed dbt models (e.g., `marts.dim_customers`). While the LLM does attempt to self-correct by querying `information_schema.tables`, it occasionally exhausts the maximum conversation turns before formulating the correct query.
-3.  **Max Turn Limit Exceeded:** Because of the two issues above, the generative AI orchestration loop sometimes hits the maximum turn limit (5 turns) while retrying tool calls, resulting in the fallback response: "I'm sorry, I couldn't find a complete answer after several attempts."
+1.  **LLM Schema Hallucination (Text-to-SQL):** When using the `sql.query` tool, the LLM often assumes a flat table structure (e.g., trying to query `customers` instead of the dbt-transformed `marts.dim_customers`). While the LLM attempts to self-correct by querying `information_schema.tables`, it wastes tokens and turns. *Reflection: If I had used LangChain's SQL Toolkit, the framework would have automatically injected the database schema into the context, preventing these hallucinations entirely.*
+2.  **Embedding Model Error Handling:** The `kb.search` tool occasionally encounters a `404 Not Found` error when calling `models/text-embedding-004`. The backend currently catches this and generates dummy vectors as a fallback to prevent a crash, which degrades search quality. *Reflection: Relying on raw SDK exception handling without a robust retry/circuit-breaker mechanism (which frameworks often provide) leads to poor "fail fast" behavior.*
+3.  **Max Turn Limit Exceeded:** Because of the two issues above, the raw loop logic sometimes hits the maximum turn limit (5 turns) while the LLM struggles to correct itself, resulting in the fallback response.
+
+Building this from scratch was a great learning experience regarding the complexities of Agentic workflows, and I now clearly see the value of adopting standardized frameworks for Context Provisioning (RAG/SQL) in production.
 
 Thank you for the opportunity to work on this exciting challenge. I look forward to your feedback.
 
