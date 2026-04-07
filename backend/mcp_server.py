@@ -59,7 +59,7 @@ from backend.mcp_tools import sql_query, kb_search, kpi_top_root_causes
 # Register the tools required by Task 2.3
 mcp_server.register_tool(
     name="sql.query",
-    description="Executes a read-only SQL query with parameterized execution.",
+    description="Executes a read-only PostgreSQL query. CRITICAL: The database heavily uses schemas (e.g., 'marts'). You must always discover and fully qualify table names with their schema (e.g., SELECT * FROM marts.dim_customers).",
     parameters={
         "type": "OBJECT",
         "properties": {

@@ -1,11 +1,11 @@
 product_id,product_name,product_type,launch_date
-PROD-001,"Krause, Bowers and Stark Checking Account",Checking Account,2022-12-18
-PROD-002,Orr and Sons Loan,Loan,2018-02-16
-PROD-003,"Robertson, Pope and Cooper Investment",Investment,2023-06-05
-PROD-004,Thomas-Scott Savings Account,Savings Account,2020-12-06
-PROD-005,Cooper PLC Checking Account,Checking Account,2022-04-30
-PROD-006,Ferguson-Garcia Credit Card,Credit Card,2021-01-19
-PROD-007,Adams-Hoffman Savings Account,Savings Account,2024-03-26
-PROD-008,Jackson Ltd Checking Account,Checking Account,2023-12-06
-PROD-009,Brooks and Sons Checking Account,Checking Account,2022-08-03
-PROD-010,Johnson-Wright Credit Card,Credit Card,2021-09-14
+PROD-001,Evans Inc Credit Card,Credit Card,2019-02-01
+PROD-002,Armstrong Ltd Savings Account,Savings Account,2017-11-07
+PROD-003,"Morris, Dixon and Campbell Checking Account",Checking Account,2019-10-17
+PROD-004,"Mcclain, Potts and Price Credit Card",Credit Card,2021-03-12
+PROD-005,"Vasquez, Lee and Lambert Loan",Loan,2018-06-09
+PROD-006,Cook-Gonzalez Loan,Loan,2021-10-23
+PROD-007,Kim-Hodges Checking Account,Checking Account,2024-04-23
+PROD-008,Hernandez-Singleton Credit Card,Credit Card,2017-11-05
+PROD-009,"Wright, Willis and Robinson Loan",Loan,2022-12-22
+PROD-010,Baker-Webster Loan,Loan,2022-02-02
