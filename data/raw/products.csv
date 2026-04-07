@@ -1,11 +1,11 @@
 product_id,product_name,product_type,launch_date
-PROD-001,Hernandez-Sherman Loan,Loan,2018-01-31
-PROD-002,Johnson Group Investment,Investment,2023-11-10
-PROD-003,"Green, Douglas and Moore Loan",Loan,2016-10-21
-PROD-004,Fernandez-Hickman Checking Account,Checking Account,2019-04-11
-PROD-005,Lawson Group Savings Account,Savings Account,2016-08-21
-PROD-006,Johnson-Dunlap Loan,Loan,2017-12-21
-PROD-007,Clark-Guerra Loan,Loan,2018-03-20
-PROD-008,Nelson and Sons Checking Account,Checking Account,2023-04-17
-PROD-009,Flores-Cantrell Investment,Investment,2020-10-29
-PROD-010,"Cochran, Jimenez and Mccoy Checking Account",Checking Account,2022-10-06
+PROD-001,Bullock-Smith Checking Account,Checking Account,2021-11-18
+PROD-002,"Collins, Davis and Bryan Loan",Loan,2018-03-21
+PROD-003,"Jarvis, Ford and Wallace Credit Card",Credit Card,2020-02-22
+PROD-004,"Hubbard, Nguyen and Chen Savings Account",Savings Account,2025-02-13
+PROD-005,"Wright, Beard and Humphrey Credit Card",Credit Card,2017-08-15
+PROD-006,"Diaz, Gonzalez and Mendoza Loan",Loan,2020-02-06
+PROD-007,Keller PLC Credit Card,Credit Card,2016-08-22
+PROD-008,Peters-Parker Checking Account,Checking Account,2025-03-16
+PROD-009,Thomas-Farrell Checking Account,Checking Account,2019-05-30
+PROD-010,Wilkins Group Checking Account,Checking Account,2024-05-31
