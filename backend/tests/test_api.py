@@ -20,8 +20,11 @@ def test_ask_endpoint_skeleton():
     with patch("backend.api.routes.genai.GenerativeModel") as MockModel:
         # Mock the chat session and response
         mock_chat = MockModel.return_value.start_chat.return_value
-        mock_chat.send_message.return_value.parts = []
-        mock_chat.send_message.return_value.text = f"You asked: '{test_payload['query']}'. I am a skeleton API, so I don't know the answer yet!"
+        class MockPart:
+            def __init__(self, text):
+                self.text = text
+                self.function_call = None
+        mock_chat.send_message.return_value.parts = [MockPart(f"You asked: '{test_payload['query']}'. I am a skeleton API, so I don't know the answer yet!")]
 
         with patch("backend.api.routes.settings.GOOGLE_API_KEY", "dummy_key"):
             response = client.post("/api/v1/ask", json=test_payload)

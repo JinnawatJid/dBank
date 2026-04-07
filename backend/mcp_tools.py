@@ -57,7 +57,7 @@ def _get_embedding(text: str) -> List[float]:
 
     try:
         result = genai.embed_content(
-            model="models/text-embedding-004",
+            model="models/embedding-001",
             content=text,
             task_type="retrieval_query"
         )
@@ -72,7 +72,7 @@ def kb_search(input_data: KBSearchInput) -> Dict[str, Any]:
     Searches the knowledge base using vector similarity.
     """
     query = input_data.query
-    top_k = input_data.top_k
+    top_k = input_data.top_k if input_data.top_k else 5
     try:
         embedding = _get_embedding(query)
     except Exception as e:
