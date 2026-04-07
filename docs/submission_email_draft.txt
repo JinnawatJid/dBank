@@ -4,25 +4,31 @@ Hi Joey,
 
 Please find my submission for the "Deep Insights Copilot" project attached. [Insert GitHub Link or indicate Zipped Folder is attached]
 
-Overall, the core architecture successfully implements the requirements specified in the exam brief. Here is a summary of what has been accomplished:
+Overall, the core architecture attempts to implement the requirements specified in the exam brief. Here is a summary of what has been built:
 
 **Completed Features & Alignments:**
-*   **Data Layer:** Successfully implemented `dbt` transformations to model the raw synthetic data (Customers, Tickets, Logins, Products) into a star schema (`marts`) within PostgreSQL.
-*   **Knowledge Retrieval Layer:** Markdown documents are successfully chunked and stored in a `pgvector` database. The `kb.search` MCP tool is implemented to retrieve these chunks.
-*   **Core API & GenAI Orchestration:** Built the FastAPI `/ask` endpoint that integrates with Google AI (`gemma-4-31b-it`) using the raw SDK. Reversible PII Masking (via Microsoft Presidio) is correctly implemented to ensure no sensitive data is sent to the LLM.
-*   **MCP Tools:** Developed the required tools (`sql.query`, `kb.search`, `kpi.top_root_causes`). The `sql.query` tool correctly enforces a read-only PostgreSQL role (`APP_USER`) and uses parameterized execution to prevent injection.
-*   **DevOps:** The entire stack is containerized using multi-stage Docker builds orchestrated by `docker-compose`, and CI/CD pipelines are configured via GitHub Actions.
+*   **Data Layer:** Implemented `dbt` transformations to model the raw synthetic data (Customers, Tickets, Logins, Products) into a star schema (`marts`) within PostgreSQL.
+*   **Knowledge Retrieval Layer:** Markdown documents are chunked and stored in a `pgvector` database, and the `kb.search` MCP tool is implemented.
+*   **Core API & GenAI Orchestration:** Built the FastAPI `/ask` endpoint to orchestrate LLM interactions and implemented Reversible PII Masking (via Microsoft Presidio) to ensure sensitive data is not sent to the LLM.
+*   **MCP Tools:** Developed the required tools (`sql.query`, `kb.search`, `kpi.top_root_causes`) utilizing parameterized execution to prevent SQL injection.
+*   **DevOps:** The stack is containerized using Docker Compose.
 
 **Known Issues & Architectural Reflections:**
-During testing, I observed some flaws in the LLM orchestration loop. I chose to build the LLM integration from scratch using the raw Google GenAI SDK to deeply understand the mechanics. However, this exposed a few issues that an orchestration framework (like LangChain) typically handles out-of-the-box:
+While the foundation is there, the system is not fully stable. During testing, the LLM orchestration loop encounters several flaws (e.g., hitting the max turn limit, SQL schema hallucinations). I want to be completely transparent about the root causes of these issues, which stem from unforeseen challenges and poor time management on my end:
 
-1.  **LLM Schema Hallucination (Text-to-SQL):** When using the `sql.query` tool, the LLM often assumes a flat table structure (e.g., trying to query `customers` instead of the dbt-transformed `marts.dim_customers`). While the LLM attempts to self-correct by querying `information_schema.tables`, it wastes tokens and turns. *Reflection: If I had used LangChain's SQL Toolkit, the framework would have automatically injected the database schema into the context, preventing these hallucinations entirely.*
-2.  **Embedding Model Error Handling:** The `kb.search` tool occasionally encounters a `404 Not Found` error when calling `models/text-embedding-004`. The backend currently catches this and generates dummy vectors as a fallback to prevent a crash, which degrades search quality. *Reflection: Relying on raw SDK exception handling without a robust retry/circuit-breaker mechanism (which frameworks often provide) leads to poor "fail fast" behavior.*
-3.  **Max Turn Limit Exceeded:** Because of the two issues above, the raw loop logic sometimes hits the maximum turn limit (5 turns) while the LLM struggles to correct itself, resulting in the fallback response.
+1.  **Embedding Model 404 Error:** The `kb.search` tool frequently fails because I did not properly research Google's embedding models or verify API compatibility before implementation. I blindly used a model (`models/text-embedding-004`) that caused a 404 error, and rather than fixing the root cause, the system falls back to returning random vectors. This completely breaks the semantic search accuracy.
+2.  **Environment Drift (Linux vs. Windows):** I relied heavily on an AI Agent (Jules) to help develop the system within a Linux Sandbox environment. When I transitioned to testing and running the system on my local Windows machine, I encountered severe environment compatibility issues that I had not anticipated, severely impacting my development timeline.
+3.  **Sudden LLM Model Switch:** Mid-development, I hit API rate limits with `gemini-2.5-pro` and made a hasty switch to `gemma-4-31b-it`. Because the response payloads and function-calling structures differ between the two models, my API parsing logic broke. Trying to hotfix this further consumed my time.
+4.  **Time Management:** Dealing with the environment drift and the sudden model switch left me without enough time to properly stabilize the LLM's SQL orchestration (which suffers from schema hallucination) and fix the embedding logic before the deadline.
 
-Building this from scratch was a great learning experience regarding the complexities of Agentic workflows, and I now clearly see the value of adopting standardized frameworks for Context Provisioning (RAG/SQL) in production.
+**Future Improvements / Lessons Learned:**
+If I were to rebuild or continue this project, I would implement the following industry standards:
+*   **Thorough API Research:** Verify model availability, rate limits, and payload structures via Postman or simple scripts *before* integrating them into the core backend.
+*   **Environment Standardization:** Ensure Development, Testing, and Production environments are strictly aligned from Day 1, relying less on sandbox specificities and testing locally much earlier.
+*   **Context Injection:** Inject the database schema (DDL) directly into the LLM's system prompt to cure the SQL schema hallucinations, rather than letting the LLM guess the table structures.
+*   **Graceful Degradation:** Instead of generating "dummy vectors" when an API fails, the system must "Fail Fast" and explicitly inform the LLM that the Knowledge Base is currently unavailable.
 
-Thank you for the opportunity to work on this exciting challenge. I look forward to your feedback.
+This project was an incredible learning experience that exposed gaps in my deployment planning and API research. Thank you for the opportunity, and I look forward to your feedback.
 
 Best regards,
 
