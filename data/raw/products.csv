@@ -1,11 +1,11 @@
 product_id,product_name,product_type,launch_date
-PROD-001,"Krause, Bowers and Stark Checking Account",Checking Account,2022-12-18
-PROD-002,Orr and Sons Loan,Loan,2018-02-16
-PROD-003,"Robertson, Pope and Cooper Investment",Investment,2023-06-05
-PROD-004,Thomas-Scott Savings Account,Savings Account,2020-12-06
-PROD-005,Cooper PLC Checking Account,Checking Account,2022-04-30
-PROD-006,Ferguson-Garcia Credit Card,Credit Card,2021-01-19
-PROD-007,Adams-Hoffman Savings Account,Savings Account,2024-03-26
-PROD-008,Jackson Ltd Checking Account,Checking Account,2023-12-06
-PROD-009,Brooks and Sons Checking Account,Checking Account,2022-08-03
-PROD-010,Johnson-Wright Credit Card,Credit Card,2021-09-14
+PROD-001,Johnson-Peterson Savings Account,Savings Account,2020-07-02
+PROD-002,"Brown, Reid and Warren Savings Account",Savings Account,2016-06-01
+PROD-003,Smith-Parrish Investment,Investment,2018-02-04
+PROD-004,"Peters, Dudley and Butler Loan",Loan,2019-02-20
+PROD-005,Leonard-Williams Credit Card,Credit Card,2016-08-22
+PROD-006,Wright-Decker Credit Card,Credit Card,2018-04-18
+PROD-007,Roth Inc Savings Account,Savings Account,2018-01-20
+PROD-008,"Mitchell, Bradley and Thomas Savings Account",Savings Account,2020-08-20
+PROD-009,Thomas Ltd Investment,Investment,2020-10-04
+PROD-010,Jones-Harrington Investment,Investment,2020-05-26
