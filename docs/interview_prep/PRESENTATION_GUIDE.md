@@ -28,8 +28,9 @@
 *   **Requirement Analysis (Deployment-grade):**
     *   "6. สุดท้ายคือส่วนของ **Deployment-grade (DevOps Engineer track)** ครับ ในส่วนนี้เราคุ้นชินอยู่บ้างแล้ว (เช่น github, containerization, CI) แต่พอเป็น Context ของ AI System ที่ต้องมีเรื่อง observability, secret hygiene, rate limits, circuit breakers รวมไปถึง cost & safety controls ด้วยแล้ว ก็ต้องทำการบ้านเยอะอยู่พอสมควรครับ"
 
-*   **Summary & Next Steps:** "สรุปจากการอ่าน Assignment นะครับ ผมได้ข้อมูลชัดเจนว่า MVP ตัวนี้ต้องประกอบด้วย RAG, การดึงข้อมูลผ่าน Tool, และระบบ Security ที่แน่นหนา สิ่งที่ผมต้องไปทำการบ้านศึกษาเพิ่มอย่างหนักก็คือ MCP, PII Masking, dbt Data Engineering, pgvector และมาตรฐาน Deployment-grade ของ AI...
-และเมื่อผมศึกษาเรื่องเหล่านี้จนครบถ้วนแล้ว ใน Step ถัดไปผมก็นำ Requirements ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อลงมือสร้าง Architecture และระบบนี้ขึ้นมาจริงๆ ครับ ซึ่งเดี๋ยวเราจะไปดูผลลัพธ์ในส่วนนั้นกันครับ"
+*   **Summary & Next Steps:** "สรุปจากการอ่าน Assignment นะครับ ผมได้ข้อมูลชัดเจนว่า assignment ตัวนี้ต้องประกอบด้วย RAG, การดึงข้อมูลผ่าน Tool, และระบบ Security ที่แน่นหนา สิ่งที่ผมต้องไปทำการบ้านศึกษาเพิ่มอย่างหนักก็คือ MCP, PII Masking, dbt Data Engineering, pgvector และมาตรฐาน Deployment-grade ของ AI
+
+เมื่อเราได้ข้อสรุปของโจทย์แล้ว และ note สำหรับการศึกษาเพิ่มเติม ต่อไปก็จะเป็นการวางแผนครับ"
 
 ---
 
