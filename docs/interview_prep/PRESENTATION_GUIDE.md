@@ -109,29 +109,7 @@
                 file_object
             )
             ```"
-        *   "**2. `staging` (Transform & Cleanse):** จากนั้นพระเอกของเราคือ **dbt** จะเข้ามารับช่วงต่อครับ มันจะดึงข้อมูลจาก `raw` มาทำ Staging ก่อน ซึ่งก็คือการทำ Data Cleansing รวมถึงการรัน **Data Tests** เพื่อป้องกันไม่ให้ข้อมูลขยะหลุดรอดไปได้ครับ ซึ่งใน dbt เราเขียน SQL ธรรมดาๆ ผสมกับ Jinja Template แบบนี้ครับ:
-            ```sql
-            -- ตัวอย่างไฟล์ stg_tickets.sql
-            WITH source AS (
-                SELECT * FROM {{ source('raw', 'tickets') }}
-            )
-            SELECT
-                ticket_id,
-                customer_id,
-                issue_type,
-                status,
-                created_at
-            FROM source
-            ```
-            และส่วนของการทำ Data Tests เราก็แค่ตั้งค่าในไฟล์ YAML ง่ายๆ แบบนี้เลยครับ dbt จะเช็คให้เราอัตโนมัติ:
-            ```yaml
-            # ตัวอย่างการทำ Data Test ป้องกันข้อมูลพัง
-            columns:
-              - name: ticket_id
-                tests:
-                  - unique
-                  - not_null
-            ```"
+        *   "**2. `staging` (Transform & Cleanse):** จากนั้นพระเอกของเราคือ **dbt** จะเข้ามารับช่วงต่อครับ มันจะดึงข้อมูลจาก `raw` มาทำ Staging ก่อน ซึ่งก็คือการทำ Data Cleansing เช่น การเลือกเฉพาะคอลัมน์ที่จำเป็น หรือการปรับชื่อคอลัมน์ให้เป็นมาตรฐานเดียวกัน รวมถึงการรัน **Data Tests** อย่างการเช็คค่าว่าง (Not Null) หรือเช็คข้อมูลซ้ำ (Unique) เพื่อป้องกันไม่ให้ข้อมูลขยะหลุดรอดไปกวนการทำงานของ AI ในภายหลังครับ"
         *   "**3. `marts` (Business Logic & Star Schema):** และ Stage สุดท้าย dbt จะเอาข้อมูลที่สะอาดแล้วจาก Staging มา Join และประกอบร่างกันเป็น **Star Schema** (มี Fact & Dimension tables) เซฟเป็นตารางลงใน schema `marts` ครับ... ซึ่งตรงนี้แหละครับ คือเหมืองข้อมูลที่สะอาดและพร้อมที่สุด ที่เราจะอนุญาตให้ AI (ผ่าน MCP `sql.query`) เข้ามาดึงข้อมูลไปตอบ User ได้ครับ"
     *   **"เส้นทางที่สอง: Unstructured Data (pgvector)"**
         *   "สำหรับพวกเอกสารคู่มือที่เป็นไฟล์ Markdown ผมเขียน Python Embedder Script เพื่อใช้ Google AI แปลงข้อความเป็นตัวเลข (Vector) แล้วเอาไปยัดใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ครับ ทำให้ RAG ของเราสามารถค้นหาเอกสารที่มีเนื้อหาคล้ายเคียงกับคำถามของ User ได้"
