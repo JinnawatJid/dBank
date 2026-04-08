@@ -58,7 +58,15 @@
         ```"
 
 *   **2. LLM & The MCP Engine:**
-    *   "พอ FastAPI รับคำถามมา มันจะส่ง Prompt และ Context ไปให้ **Google AI Studio (LLM)** ช่วยคิดครับ"
+    *   "พอ FastAPI รับคำถามมา มันจะส่ง Prompt และ Context ไปให้ **Google AI Studio (LLM)** ช่วยคิดครับ ซึ่งในระบบของเรา Context ที่ส่งไปจะถูกกำหนดไว้ใน `system_instruction` เพื่อคุม Persona ของ AI ครับ หน้าตาประมาณนี้:
+        ```python
+        # Context (System Instruction)
+        "You are an expert dBank customer support AI. Provide clear, concise answers... "
+        "CRITICAL RULES: Never explicitly mention the names of tools you use..."
+
+        # Prompt (User Query)
+        "User: What caused the spike in tickets?"
+        ```"
     *   "จุดที่เป็นไฮไลท์คือตรงนี้ครับ LLM ไม่ได้ตอบกลับมาเป็น Text ธรรมดาเสมอไป แต่มันฉลาดพอที่จะบอกว่า 'ฉันต้องดึงข้อมูลเพิ่ม' และมันจะสั่งงานผ่าน **MCP Protocol** กลับมาที่ **MCP Server** ที่ผมสร้างไว้ดักรอคำสั่งโดยเฉพาะครับ"
     *   "โดยใน MCP Server นี้ ผมเตรียม Tool ไว้ 3 ตัวหลักๆ คือ `sql.query` (สำหรับคำถามเจาะจง), `kpi.top_root_causes` (สำหรับดูภาพรวม), และ `kb.search` (สำหรับหาเอกสาร RAG) ครับ"
 
