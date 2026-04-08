@@ -35,7 +35,7 @@
 
 *(Note for Jinnawat: For this section, display the "High-Level System Architecture" Mermaid diagram.)*
 
-*   **Transition & Introduction:** "เมื่อเราวิเคราะห์ Requirement เสร็จแล้ว สเตปต่อไปคือการออกแบบระบบให้ตอบโจทย์ครับ ซึ่งผมได้วาด High-Level Architecture Diagram ออกมาตามภาพนี้ครับ โดยผมแบ่งระบบออกเป็น 3 แกนหลัก คือ User Interface, API & Orchestration, และ Data Layer ครับ"
+*   **Transition & Introduction:** "ในส่วนของการออกแบบระบบ ผมได้ออกแบบ High-Level Architecture Diagram ตามภาพนี้ครับ โดยผมแบ่งระบบออกเป็น 3 แกนหลัก คือ User Interface, Backend & API, และ Data Layer ครับ"
 
 *   **1. User Interaction (Next.js & FastAPI):**
     *   "เริ่มจากฝั่งซ้ายบนนะครับ เวลา Operation Support ใช้งานจริง เขาจะพิมพ์คำถามผ่าน UI ที่สร้างด้วย **Next.js** ครับ คำถามนี้จะถูกแพ็คส่งมาเป็น JSON วิ่งเข้ามาที่ **FastAPI Backend** ซึ่งทำหน้าที่เป็น 'RAG Orchestrator' หรือสมองกลหลักที่คอยควบคุม Flow ทั้งหมดครับ"
