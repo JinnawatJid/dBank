@@ -8,9 +8,6 @@
 
 ## 1. Introduction & The Thought Process (10 minutes)
 
-**Objective:** Hook the CTO immediately by showing your structured thinking process. Prove that you translate business problems into technical architectures, not just blindly writing code.
-
-*   **Greeting:** "สวัสดีครับ วันนี้ผมจะมานำเสนอโปรเจกต์ Deep Insights Copilot ครับ ก่อนที่เราจะไปดูเรื่อง Architecture หรือ Live Demo ผมอยากขอแชร์กระบวนการคิด ของผมสักนิดนึงครับ"
 *   **The Approach:** "สิ่งแรกที่ผมทำหลังจากได้รับ Assignment คือการอ่านอย่างตั้งใจและตีความโจทย์ให้แตกครับ"
 *   **Requirement Analysis (Referencing the PDF):** "ถ้าเรามาดูใน PDF assignment ในหัวข้อ Scenario ไปพร้อมๆ กันนะครับ พอผมอ่านส่วนแรก ผมก็จับใจความได้ว่า เราเป็น Operation support team ที่มี Ticket เปิดมาเยอะมาก และเราต้องการตัวช่วยในเรื่องนี้ ซึ่งก็คือระบบ 'Deep Insights Copilot' โดยเจ้าระบบนี้จะต้องมีความสามารถหลัก 2 อย่างครับ:"
     1.  **"1. answer natural-language questions grounded in company data/docs"**
