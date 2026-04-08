@@ -102,6 +102,21 @@
             *   **เราทำยังไง?** เราใช้ Python Script โหลดข้อมูลดิบเข้า Database ครับ
             *   **ไฟล์ที่เรียกใช้:** `scripts/generate_mock_data.py`
             *   **อธิบายตอนสัมภาษณ์:** "ในส่วนแรก ผมรันคำสั่ง `python scripts/generate_mock_data.py` ครับ โค้ดตัวนี้จะสร้างข้อมูล Mock ของแบงก์ขึ้นมาเป็น CSV แล้วใช้ฟังก์ชัน `cur.copy_expert` ของไลบรารี `psycopg2` ทำ Bulk Insert ข้อมูลทั้งหมดลงในตารางของ schema `raw` ทันทีครับ"
+            *   **ตัวอย่างโค้ดที่สำคัญ:**
+                ```python
+                # วนลูปอ่านไฟล์ CSV และใช้ Bulk Insert เข้า schema 'raw'
+                for filepath, table in files_to_load:
+                    with open(filepath, 'r') as f:
+                        header = f.readline().strip()
+                        columns = header.split(',')
+                        f.seek(0)
+
+                        # ใช้ COPY เพื่อประสิทธิภาพสูงสุดในการอิมพอร์ตข้อมูลมหาศาล
+                        cur.copy_expert(
+                            f"COPY {table} ({','.join(columns)}) FROM STDIN WITH (FORMAT CSV, HEADER)",
+                            f
+                        )
+                ```
 
         *   **"2. `staging` (Transform & Cleanse)"**
             *   **เราทำยังไง?** เราใช้คำสั่งของ dbt ดึงข้อมูลจาก `raw` มาทำความสะอาดและตรวจสอบ
