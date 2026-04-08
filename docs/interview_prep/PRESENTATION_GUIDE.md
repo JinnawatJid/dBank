@@ -33,15 +33,18 @@
 
 ## 2. Architecture Walkthrough (10 minutes)
 
-**Objective:** Prove your technical depth based on the requirement analysis.
+*(Note for Jinnawat: For this section, you should have an Architecture Diagram (e.g., drawn in draw.io or Excalidraw) showing the following boxes and arrows:)*
+*   *Box 1 (Left): User -> Next.js (Frontend)*
+*   *Box 2 (Middle): FastAPI (Backend) -> PII Masking Engine -> MCP Server Engine*
+*   *Box 3 (Top Right): Google AI Studio (LLM)*
+*   *Box 4 (Bottom Right): PostgreSQL (Separated into 'raw', 'marts', and 'pgvector' schemas)*
+*   *Arrows: Showing the flow from Frontend -> Backend -> Masking -> LLM. Then LLM sending a tool call back to Backend -> Parameterized SQL execution to 'marts'/'pgvector' -> Unmasking -> Back to Frontend.*
 
-*   **The Tech Stack in Action:**
-    *   **Data Transformation:** Explain how `dbt` acts as the primary quality gate.
-    *   **Vector Database:** Explain the efficiency of `pgvector` for this specific scale.
-*   **Deep Dive - Security & Zero-Trust (Crucial for CTO):**
-    *   "As I mentioned in the requirement analysis, security was paramount."
-    *   **Pydantic:** All MCP inputs are strictly typed and validated. Hallucinations fail safely.
-    *   **Least Privilege:** The database connection strictly enforces `SET ROLE app_user;`. The LLM can only query read-only, PII-masked marts. Every execution is wrapped in `try/except/finally` blocks with explicit rollbacks to maintain transactional integrity.
+*   **Transition & Diagram Introduction:** "เมื่อเราวิเคราะห์ Requirement เสร็จแล้ว สเตปต่อไปคือการออกแบบระบบให้ตอบโจทย์ครับ ซึ่งผมได้วาด High-Level Architecture Diagram ออกมาตามภาพนี้ครับ"
+*   **Explaining the Flow (Data Pipeline):** "ผมขอเริ่มอธิบายจากฐานรากของระบบก่อน นั่นคือฝั่ง Data Layer (ชี้ไปที่กล่องล่างขวา) ผมออกแบบโดยยึดหลัก Zero-Trust ครับ ข้อมูลดิบจะถูกดึงเข้ามาที่ schema `raw` ใน Postgres จากนั้นเราจะใช้ dbt ทำการ Transform และ Test ข้อมูลให้กลายเป็น Star Schema ไปเก็บไว้ที่ `marts`... กฎเหล็กของผมคือ AI จะไม่มีวันได้รับสิทธิ์ในการมองเห็น schema `raw` เด็ดขาดครับ"
+*   **Explaining the Flow (User Request & Security):** "ทีนี้มาดูเวลา User ใช้งานจริงกันครับ (ชี้ไปที่กล่องซ้าย) พอ User พิมพ์คำถามเข้ามาที่ Next.js มันจะวิ่งมาที่ FastAPI Backend ทันทีที่มาถึง สิ่งแรกที่ผมทำคือส่งมันเข้า **PII Masking Engine** ก่อนเลยครับ ชื่อหรือข้อมูล Sensitive จะถูกแปลงเป็น UUID Token ทันที เพื่อป้องกันไม่ให้ข้อมูลหลุดไปที่ LLM Provider (Google AI)"
+*   **Explaining the Flow (MCP & Tool Execution):** "พอ LLM ได้รับคำถาม (ที่ Mask แล้ว) มันจะคิดและบอก Backend ว่า 'ฉันต้องใช้ Tool ชื่อ sql.query' ตรงนี้แหละครับคือการทำงานของ **MCP Server** (ชี้ไปที่กล่องกลาง) ซึ่งผมเขียน Custom ขึ้นมาเพื่อดักจับคำสั่งนี้... ก่อนที่ SQL จะถูกรัน ผมใช้ Pydantic ตรวจสอบความถูกต้องของ Parameters อีกชั้น และบังคับรันผ่าน SQLAlchemy Parameterized queries เท่านั้น เพื่อป้องกัน SQL Injection แบบ 100%"
+*   **Conclusion of Architecture:** "สรุปก็คือ Architecture ตัวนี้ไม่ได้ออกแบบมาให้แค่ 'ทำงานได้' แต่มันออกแบบแบบ 'Defense-in-Depth' มี Security Guardrails ดักไว้ทุกๆ จุดเชื่อมต่อ ตั้งแต่ Data Layer ไปจนถึง Prompt Execution ครับ"
 
 ---
 
