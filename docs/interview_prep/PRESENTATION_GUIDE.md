@@ -98,25 +98,22 @@
     *   "ถ้าเราซูมดูเฉพาะ Data Pipeline จะเห็นภาพชัดขึ้นแบบนี้ครับ การทำงานจะแบ่งเป็น 2 เส้นทางหลักๆ"
     *   **"เส้นทางแรก: Structured Data แบบ Modern ELT"**
         *   "ในส่วนนี้ผมออกแบบ Pipeline ให้เป็นแบบ **ELT (Extract, Load, Transform)** ซึ่งแบ่งออกเป็น 3 Stages หลักๆ เพื่อความคลีนของระบบครับ:"
-        *   "**1. `raw` (Extract & Load):** เราเริ่มจากไฟล์ CSV (Customers, Tickets) โดยผมเขียน Python Init Script เพื่อ Extract ข้อมูลดิบและ Load เข้าไปเก็บใน PostgreSQL ที่ schema `raw` ครับ หน้าตาโค้ดจะเป็นประมาณนี้ครับ:
-            ```python
-            # อ่านชื่อ Column จาก Header ของ CSV
-            columns = header.split(',')
+        *   **"1. `raw` (Extract & Load)"**
+            *   **เราทำยังไง?** เราใช้ Python Script โหลดข้อมูลดิบเข้า Database ครับ
+            *   **ไฟล์ที่เรียกใช้:** `scripts/generate_mock_data.py`
+            *   **อธิบายตอนสัมภาษณ์:** "ในส่วนแรก ผมรันคำสั่ง `python scripts/generate_mock_data.py` ครับ โค้ดตัวนี้จะสร้างข้อมูล Mock ของแบงก์ขึ้นมาเป็น CSV แล้วใช้ฟังก์ชัน `cur.copy_expert` ของไลบรารี `psycopg2` ทำ Bulk Insert ข้อมูลทั้งหมดลงในตารางของ schema `raw` ทันทีครับ"
 
-            # โหลดข้อมูลแบบ Bulk Insert เข้าไปที่ schema 'raw' ให้เร็วที่สุด
-            cur.copy_expert(
-                f"COPY raw.customers ({','.join(columns)}) FROM STDIN WITH (FORMAT CSV, HEADER)",
-                file_object
-            )
-            ```"
-        *   "**2. `staging` (Transform & Cleanse):** จากนั้นพระเอกของเราคือ **dbt** จะเข้ามารับช่วงต่อครับ มันจะดึงข้อมูลจาก `raw` มาทำ Staging ก่อน ซึ่งก็คือการทำ Data Cleansing เช่น การเลือกเฉพาะคอลัมน์ที่จำเป็น หรือการปรับชื่อคอลัมน์ให้เป็นมาตรฐานเดียวกัน รวมถึงการรัน **Data Tests** อย่างการเช็คค่าว่าง (Not Null) หรือเช็คข้อมูลซ้ำ (Unique) เพื่อป้องกันไม่ให้ข้อมูลขยะหลุดรอดไปกวนการทำงานของ AI ในภายหลังครับ"
-        *   "**3. `marts` (Business Logic & Star Schema):** และ Stage สุดท้าย dbt จะเอาข้อมูลที่สะอาดแล้วจาก Staging มา Join และประกอบร่างกันเป็น **Star Schema** (มี Fact & Dimension tables) เซฟเป็นตารางลงใน schema `marts` ครับ... ซึ่งตรงนี้แหละครับ คือเหมืองข้อมูลที่สะอาดและพร้อมที่สุด ที่เราจะอนุญาตให้ AI (ผ่าน MCP `sql.query`) เข้ามาดึงข้อมูลไปตอบ User ได้ครับ"
+        *   **"2. `staging` (Transform & Cleanse)"**
+            *   **เราทำยังไง?** เราใช้คำสั่งของ dbt ดึงข้อมูลจาก `raw` มาทำความสะอาดและตรวจสอบ
+            *   **โค้ด/โฟลเดอร์ที่เกี่ยวข้อง:** โฟลเดอร์ `data/dbank_analytics/models/staging/`
+            *   **อธิบายตอนสัมภาษณ์:** "จากนั้นผมใช้คำสั่ง `dbt run --select staging` ครับ เพื่อรันโค้ด SQL ที่อยู่ในโฟลเดอร์ `staging` (เช่น `stg_tickets.sql`) ตรงนี้คือการทำ Cleansing ครับ และ dbt จะทำการเช็ค Data Tests ที่ผมเขียนเอาไว้ในไฟล์ `schema.yml` อัตโนมัติ (เช่น เช็ค Unique, Not Null) เพื่อกันข้อมูลขยะครับ"
 
-        *(Note for Jinnawat - Technical Details for Q&A: If the CTO asks HOW these steps are actually executed in the codebase, use this cheat sheet):*
-        *   *Step 1 (raw): We run `python scripts/generate_mock_data.py`. It uses `psycopg2`'s `cur.copy_expert` for fast bulk inserts.*
-        *   *Step 2 (staging): We run `dbt run --select staging`. It executes the SQL files in `data/dbank_analytics/models/staging/` and automatically checks the Data Tests defined in `schema.yml`.*
-        *   *Step 3 (marts): We run `dbt run`. It builds the Star Schema using the files in `data/dbank_analytics/models/marts/`.*
-        *   *Orchestration: In our system, all these steps are fully automated to run sequentially inside Docker via the `dbank_dbt_init` service before the backend API ever boots up.*
+        *   **"3. `marts` (Business Logic & Star Schema)"**
+            *   **เราทำยังไง?** เราให้ dbt เอาข้อมูลจาก Staging มา Join กันเป็น Star Schema แล้วบันทึกเป็น Table
+            *   **โค้ด/โฟลเดอร์ที่เกี่ยวข้อง:** โฟลเดอร์ `data/dbank_analytics/models/marts/`
+            *   **อธิบายตอนสัมภาษณ์:** "ขั้นตอนสุดท้าย ผมใช้คำสั่ง `dbt run` เพื่อให้มันรัน SQL ในโฟลเดอร์ `marts` ครับ (เช่น `fact_tickets.sql`, `dim_customers.sql`) เพื่อประกอบร่างเป็น Star Schema แล้วเซฟเป็น Physical Table ลง Database จริงๆ ตรงนี้คือจุดสิ้นสุดกระบวนการ ELT ครับ... และหลังจากนี้ FastAPI Backend ค่อยถูกรันขึ้นมา เพื่อให้ MCP เข้ามาคิวรีข้อมูลก้อนนี้ไปใช้ครับ"
+
+        *(Note for Jinnawat - Orchestration: In our system, all these steps are fully automated to run sequentially inside Docker via the `dbank_dbt_init` service before the backend API ever boots up.)*
 
     *   **"เส้นทางที่สอง: Unstructured Data (pgvector)"**
         *   "สำหรับพวกเอกสารคู่มือที่เป็นไฟล์ Markdown ผมเขียน Python Embedder Script เพื่อใช้ Google AI แปลงข้อความเป็นตัวเลข (Vector) แล้วเอาไปยัดใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ครับ ทำให้ RAG ของเราสามารถค้นหาเอกสารที่มีเนื้อหาคล้ายเคียงกับคำถามของ User ได้"
