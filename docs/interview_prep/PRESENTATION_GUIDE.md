@@ -67,6 +67,15 @@
         # Prompt (User Query)
         "User: What caused the spike in tickets?"
         ```"
+    *   "หลายคนอาจจะสงสัยนะครับว่า แล้ว LLM มันรู้ได้ยังไงว่าต้องใช้ Tool ตัวไหน? คำตอบคือ ตอนที่เราตั้งค่า LLM ครั้งแรกในโค้ด เราจะแนบ **Tool Definitions** หรือคู่มือการใช้ Tool ไปด้วยครับ ซึ่งในโค้ดของเรา (`mcp_server.py`) จะมีการ Register Tool พร้อมเขียน Description กำกับไว้อย่างชัดเจนแบบนี้ครับ:
+        ```python
+        mcp_server.register_tool(
+            name="sql.query",
+            description="Executes a read-only PostgreSQL query. CRITICAL: The database heavily uses schemas (e.g., 'marts')...",
+            parameters={ ... }
+        )
+        ```
+        LLM จะอ่าน Description พวกนี้แหละครับ เพื่อตัดสินใจว่าคำถามแบบไหน ควรหยิบ Tool ไหนมาใช้"
     *   "ในบางกรณี LLM ก็จะไม่ได้ตอบกลับมาเป็นแค่ข้อความธรรมดา แต่ต้องดึงข้อมูลเพิ่ม มันก็จะสั่งงานผ่าน **MCP Protocol** กลับมาที่ **MCP Server** ที่เราสร้างไว้ครับ ซึ่งหน้าตาของ Protocol ที่ LLM ส่งมาขอเรียกใช้ Tool จะเป็นแบบนี้ครับ:
         ```json
         {
