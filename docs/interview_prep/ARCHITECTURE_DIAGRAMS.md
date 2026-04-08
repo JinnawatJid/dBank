@@ -19,35 +19,30 @@ graph LR
     %% Nodes
     User(("Operation Support\n(User)"))
 
-    subgraph "Docker Network (Frontend)"
-        UI["Next.js Frontend\n(React, Tailwind CSS)"]:::frontend
+    subgraph "Frontend Network"
+        UI["Web Application\n(Next.js)"]:::frontend
     end
 
-    subgraph "Docker Network (Backend)"
-        API["FastAPI Backend\n(Python, Uvicorn)"]:::backend
-        MCP["Custom MCP Server\n(Tool Routing, Pydantic)"]:::backend
-        Masker["Security Guardrails\n(PII Masking, Presidio)"]:::backend
+    subgraph "Backend Network"
+        API["Backend API & MCP Server\n(FastAPI)"]:::backend
     end
 
-    subgraph "PostgreSQL (Zero-Trust Architecture)"
-        DB_RAW[("'raw' schema\n(Unmasked Data)")]:::db
-        DB_MART[("'marts' schema\n(Star Schema, Masked)")]:::db
-        DB_VEC[("'public' schema\n(pgvector Embeddings)")]:::db
+    subgraph "Data Storage"
+        DB[("PostgreSQL Database\n(Relational & Vector Data)")]:::db
     end
 
-    LLM{"Google AI Studio\n(gemma-4-31b-it)"}:::ai
+    subgraph "External Providers"
+        LLM{"Google AI Studio\n(LLM API)"}:::ai
+    end
 
     %% Relationships
-    User -- "1. Asks question" --> UI
-    UI -- "2. POST /api/v1/ask" --> API
-    API -- "3. Routes through" --> Masker
-    Masker -- "4. Sends Masked Prompt" --> LLM
-    LLM -- "5. Decides to call Tool" --> MCP
-    MCP -- "6a. Executes Parameterized SQL" --> DB_MART
-    MCP -- "6b. Executes Semantic Search" --> DB_VEC
-
-    %% Security constraints
-    DB_RAW -. "Strictly Blocked for LLM" .-> MCP
+    User -- "1. Ask natural language question" --> UI
+    UI -- "2. Submit prompt" --> API
+    API -- "3. Secure queries / searches" --> DB
+    DB -- "4. Return structured context" --> API
+    API -- "5. Send context & prompt" --> LLM
+    LLM -- "6. Return final generated answer" --> API
+    API -- "7. Return answer & tool logs" --> UI
 ```
 
 ---
