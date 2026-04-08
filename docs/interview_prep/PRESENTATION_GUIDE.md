@@ -191,7 +191,10 @@
         *(Note for Jinnawat - Orchestration: In our system, all these steps are fully automated to run sequentially inside Docker via the `dbank_dbt_init` service before the backend API ever boots up.)*
 
     *   **"เส้นทางที่สอง: Unstructured Data (pgvector)"**
-        *   "สำหรับพวกเอกสารคู่มือที่เป็นไฟล์ Markdown ผมเขียน Python Embedder Script เพื่อใช้ Google AI แปลงข้อความเป็นตัวเลข (Vector) แล้วเอาไปยัดใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ครับ ทำให้ RAG ของเราสามารถค้นหาเอกสารที่มีเนื้อหาคล้ายเคียงกับคำถามของ User ได้"
+        *   **เราทำยังไง?** เราใช้ Python Script แบ่งไฟล์เอกสารเป็นท่อนๆ (Chunking) แล้วส่งไปแปลงเป็น Vector (ตัวเลข) ผ่าน Google AI ก่อนเซฟลง PostgreSQL ครับ
+        *   **โค้ด/โฟลเดอร์ที่เกี่ยวข้อง:** ไฟล์ `scripts/embed_kb.py` และโฟลเดอร์เอกสาร `data/knowledge_base/`
+        *   **อธิบายตอนสัมภาษณ์:** "สำหรับข้อมูลประเภทที่สอง คือพวกเอกสารคู่มือที่เป็นไฟล์ Markdown หรือไฟล์ Text ต่างๆ ผมเขียน Python Embedder Script (`embed_kb.py`) ขึ้นมาจัดการครับ โค้ดตัวนี้จะทำหน้าที่หั่นเอกสารยาวๆ ออกเป็นท่อนเล็กๆ (Chunking) แล้วโยนไปให้ Google AI แปลงข้อความพวกนั้นเป็นตัวเลข (Vector Embeddings)
+        จากนั้นก็นำตัวเลขพวกนี้ไปบันทึกใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ของ PostgreSQL ครับ ทำให้ระบบ RAG ของเราสามารถค้นหาเนื้อหาเอกสารที่มีความหมายคล้ายเคียงกับคำถามของ User เพื่อนำไปใช้เป็น Context ให้ LLM ตอบคำถามได้อย่างแม่นยำครับ"
 
 *   **4. Security Guardrails & Tool Execution:**
     *   "สุดท้าย เมื่อ Tool จาก MCP Server วิ่งไปดึงข้อมูลจาก Database ที่เตรียมไว้ ผมตั้งกฎเหล็ก (Guardrails) ไว้เลยว่า การคิวรีทุกครั้งต้องเป็นแบบ **'Read-Only SQL'** เท่านั้น และข้อมูล PII ต่างๆ จะต้องถูก Masking ตั้งแต่ชั้น FastAPI ก่อนที่ข้อมูลจะหลุดไปถึง LLM ครับ"
