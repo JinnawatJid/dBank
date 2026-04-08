@@ -17,25 +17,25 @@ graph TD
     classDef external fill:#6b7280,stroke:#374151,color:white,stroke-width:2px;
 
     %% Nodes
-    User(("🧑‍💼 Operation Support\n(User)"))
+    User(("Operation Support\n(User)"))
 
     subgraph "Docker Network (Frontend)"
-        UI["💻 Next.js Frontend\n(React, Tailwind CSS)"]:::frontend
+        UI["Next.js Frontend\n(React, Tailwind CSS)"]:::frontend
     end
 
     subgraph "Docker Network (Backend)"
-        API["⚙️ FastAPI Backend\n(Python, Uvicorn)"]:::backend
-        MCP["🛠️ Custom MCP Server\n(Tool Routing, Pydantic)"]:::backend
-        Masker["🛡️ Security Guardrails\n(PII Masking, Presidio)"]:::backend
+        API["FastAPI Backend\n(Python, Uvicorn)"]:::backend
+        MCP["Custom MCP Server\n(Tool Routing, Pydantic)"]:::backend
+        Masker["Security Guardrails\n(PII Masking, Presidio)"]:::backend
     end
 
     subgraph "PostgreSQL (Zero-Trust Architecture)"
-        DB_RAW[("🗄️ 'raw' schema\n(Unmasked Data)")]:::db
-        DB_MART[("📊 'marts' schema\n(Star Schema, Masked)")]:::db
-        DB_VEC[("🧠 'public' schema\n(pgvector Embeddings)")]:::db
+        DB_RAW[("'raw' schema\n(Unmasked Data)")]:::db
+        DB_MART[("'marts' schema\n(Star Schema, Masked)")]:::db
+        DB_VEC[("'public' schema\n(pgvector Embeddings)")]:::db
     end
 
-    LLM{"🧠 Google AI Studio\n(gemma-4-31b-it)"}:::ai
+    LLM{"Google AI Studio\n(gemma-4-31b-it)"}:::ai
 
     %% Relationships
     User -- "1. Asks question" --> UI
@@ -79,7 +79,7 @@ sequenceDiagram
     MCP->>Sec: Unmask Payload (<PERSON_123> -> John Doe)
     Sec-->>MCP: Returns unmasked args
 
-    Note over MCP,DB: SET ROLE app_user; (Least Privilege)
+    Note right of MCP: Enforce Least Privilege (SET ROLE app_user)
     MCP->>DB: Execute Parameterized SQL (name="John Doe")
     DB-->>MCP: Returns: [{ticket_count: 5}]
 
@@ -108,20 +108,20 @@ graph LR
     classDef pg fill:#8b5cf6,stroke:#4c1d95,color:white,stroke-width:2px;
 
     %% Data Sources
-    CSV1[📄 Customers CSV]:::source
-    CSV2[📄 Tickets CSV]:::source
-    DOCS[📝 KB Markdown Docs]:::source
+    CSV1[Customers CSV]:::source
+    CSV2[Tickets CSV]:::source
+    DOCS[KB Markdown Docs]:::source
 
     %% Processors
-    INIT[⚙️ Python Init Script]:::python
-    DBT[🔨 dbt (Data Build Tool)]:::dbt
-    EMBED[🧠 Python Embedder Script]:::python
+    INIT[Python Init Script]:::python
+    DBT[dbt - Data Build Tool]:::dbt
+    EMBED[Python Embedder Script]:::python
 
     %% PostgreSQL Targets
-    RAW[(🗄️ schema: 'raw')]:::pg
-    STG[(🗄️ schema: 'staging')]:::pg
-    MART[(📊 schema: 'marts'\nStar Schema)]:::pg
-    VEC[(🧠 schema: 'public'\nkb_embeddings)]:::pg
+    RAW[("schema: 'raw'")]:::pg
+    STG[("schema: 'staging'")]:::pg
+    MART[("schema: 'marts'\nStar Schema")]:::pg
+    VEC[("schema: 'public'\nkb_embeddings")]:::pg
 
     %% Flow
     CSV1 --> INIT
