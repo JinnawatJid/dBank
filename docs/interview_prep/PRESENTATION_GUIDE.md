@@ -24,7 +24,9 @@
 *   **Requirement Analysis (What to build):** "ถัดมาคือส่วนของ 'What to build (minimum)' ผมอ่านคร่าวๆ ก็พบเรื่องที่ต้องกังวลอีกครับ คือเรื่องของ **Data Layer** ที่โจทย์ระบุว่า 'Postgres (star schema or 3NF) + dbt transformations + data tests' ซึ่งเป็นเรื่องของ Data Engineering เต็มตัว และตัวผมเองก็ไม่ได้ทบทวน หรือคุ้นชินกับเรื่องพวกนี้มาสักพักแล้ว ทำให้ผมตระหนักว่า ถ้าจะทำระบบนี้ออกมาให้ดี ผมต้องไปทำ Study Guide และ Re-skill ทบทวนเรื่องพวกนี้ใหม่หมดเลย"
     *   "นอกจากนี้ในส่วนของ **Retrieval Layer** โจทย์อนุญาตให้ใช้ 'pgvector' ได้ ซึ่งผมก็โน้ตไว้ว่าต้องไปทำ Study Guide เรื่องนี้เพิ่มเติมเช่นกัน เพื่อให้มั่นใจว่าจะนำมาประกอบร่างเป็น Architecture ที่สมบูรณ์ได้ครับ"
 
-*   **Transition:** "...หลังจากทำความเข้าใจโจทย์ และไป Re-skill ศึกษาเรื่อง MCP, AI Guardrails, dbt และ pgvector เพิ่มเติมแล้ว ผมก็นำ Requirements ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อให้เกิดเป็น MVP ที่ใช้งานได้จริงครับ ซึ่งเดี๋ยวเราจะไปดู Architecture ของระบบนี้กันครับ"
+*   **Requirement Analysis (Deployment-grade):** "สุดท้ายคือส่วนของ **Deployment-grade (DevOps Engineer track)** ครับ พูดตรงๆ ว่าในส่วนนี้เราคุ้นชินอยู่บ้างแล้ว (เช่น github, containerization, CI) แต่พอเป็น Context ของ AI System ที่ต้องมีเรื่อง observability, secret hygiene, rate limits, circuit breakers รวมไปถึง cost & safety controls ด้วยแล้ว ก็ต้องทำการบ้านเยอะอยู่พอสมควรครับ ผมเลยทำ Study Guide เจาะลึกเรื่องนี้ไว้เป็น Check-list เพื่อให้มั่นใจว่าผมทำครบทุกข้อตามมาตรฐาน Enterprise ครับ"
+
+*   **Transition:** "...หลังจากทำความเข้าใจโจทย์ และไปทำการบ้าน Re-skill ศึกษาเรื่อง MCP, AI Guardrails, dbt, pgvector และ Deployment-grade เพิ่มเติมอย่างหนักแล้ว ผมก็นำ Requirements ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อให้เกิดเป็น MVP ที่ส่งมอบได้จริงครับ ซึ่งเดี๋ยวเราจะไปดู Architecture ของระบบนี้กันครับ"
 
 ---
 
