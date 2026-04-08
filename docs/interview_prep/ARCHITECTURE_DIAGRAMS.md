@@ -4,45 +4,48 @@
 
 ---
 
-## 1. High-Level System Architecture (C4 Container Diagram)
-**Purpose:** Show the CTO the "Big Picture" of how the frontend, backend, database, and LLM provider interact, highlighting the security boundaries.
+## 1. High-Level System Architecture
+**Purpose:** Show the CTO the complete flow from the user interface down to the AI orchestration and data layers, detailing how the MCP Server connects the LLM to PostgreSQL.
 
 ```mermaid
-graph LR
-    %% Define Styles
-    classDef frontend fill:#3b82f6,stroke:#1e40af,color:white,stroke-width:2px;
-    classDef backend fill:#10b981,stroke:#1d4ed8,color:white,stroke-width:2px;
-    classDef db fill:#8b5cf6,stroke:#047857,color:white,stroke-width:2px;
-    classDef ai fill:#f59e0b,stroke:#b45309,color:white,stroke-width:2px;
-    classDef external fill:#6b7280,stroke:#374151,color:white,stroke-width:2px;
+graph TD
+    %% User and UI
+    User([Operations Support]) --> UI[Next.js UI]
 
-    %% Nodes
-    User(("Operation Support\n(User)"))
+    %% API & Orchestration
+    UI -- "/ask (JSON)" --> FastAPI[FastAPI Backend\nRAG Orchestrator]
 
-    subgraph "Frontend Network"
-        UI["Web Application\n(Next.js)"]:::frontend
-    end
+    %% LLM & MCP
+    FastAPI -- "Prompt & Context" --> LLM[Google AI Studio]
+    FastAPI -- "MCP Protocol" --> MCPServer[MCP Server]
 
-    subgraph "Backend Network"
-        API["Backend API & MCP Server\n(FastAPI)"]:::backend
-    end
+    %% Tools inside MCP
+    MCPServer --> Tool1(sql.query)
+    MCPServer --> Tool2(kpi.top_root_causes)
+    MCPServer --> Tool3(kb.search)
 
-    subgraph "Data Storage"
-        DB[("PostgreSQL Database\n(Relational & Vector Data)")]:::db
-    end
+    %% Data Layer
+    Tool1 -- "Read-Only SQL" --> PostgresDB[(PostgreSQL)]
+    Tool2 -- "Read-Only SQL" --> PostgresDB
+    Tool3 -- "pgvector similarity" --> PostgresDB
 
-    subgraph "External Providers"
-        LLM{"Google AI Studio\n(LLM API)"}:::ai
-    end
+    %% Data Pipeline
+    RawData[(Raw CSV/Mock Data)] --> dbt[dbt Core]
+    KnowledgeBase[Markdown Files] --> Embedder[Embedding Script]
 
-    %% Relationships
-    User -- "1. Ask natural language question" --> UI
-    UI -- "2. Submit prompt" --> API
-    API -- "3. Secure queries / searches" --> DB
-    DB -- "4. Return structured context" --> API
-    API -- "5. Send context & prompt" --> LLM
-    LLM -- "6. Return final generated answer" --> API
-    API -- "7. Return answer & tool logs" --> UI
+    dbt -- "Transform & Test" --> PostgresDB
+    Embedder -- "Vectorize" --> PostgresDB
+
+    %% Styling
+    classDef ui fill:#4A90E2,color:white;
+    classDef api fill:#50E3C2,color:black;
+    classDef mcp fill:#F5A623,color:white;
+    classDef db fill:#B8E986,color:black;
+
+    class UI ui;
+    class FastAPI api;
+    class MCPServer mcp;
+    class PostgresDB db;
 ```
 
 ---
