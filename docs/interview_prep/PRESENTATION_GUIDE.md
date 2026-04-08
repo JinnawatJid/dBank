@@ -12,21 +12,24 @@
 
 *   **Greeting:** "สวัสดีครับ วันนี้ผมจะมานำเสนอโปรเจกต์ Deep Insights Copilot ครับ ก่อนที่เราจะไปดูเรื่อง Architecture หรือ Live Demo ผมอยากขอแชร์กระบวนการคิด ของผมสักนิดนึงครับ"
 *   **The Approach:** "สิ่งแรกที่ผมทำหลังจากได้รับ Assignment คือการอ่านอย่างตั้งใจและตีความโจทย์ให้แตกครับ"
-*   **Requirement Analysis (Referencing the PDF):** "ถ้าเรามาดูใน PDF assignment ในหัวข้อ Scenario ไปพร้อมๆ กันนะครับ พอผมอ่านส่วนแรก ผมก็จับใจความได้ว่า เราเป็น Operation support team ที่มีปัญหาคือ Ticket เปิดมาเยอะมาก และเราต้องการตัวช่วยในเรื่องนี้ ซึ่งก็คือระบบ 'Deep Insights Copilot' โดยเจ้าระบบนี้จะต้องมีความสามารถหลัก 2 อย่างครับ:"
+*   **Requirement Analysis (Referencing the PDF):** "ถ้าเรามาดูใน PDF assignment ในหัวข้อ Scenario ไปพร้อมๆ กันนะครับ พอผมอ่านส่วนแรก ผมก็จับใจความได้ว่า เราเป็น Operation support team ที่มี Ticket เปิดมาเยอะมาก และเราต้องการตัวช่วยในเรื่องนี้ ซึ่งก็คือระบบ 'Deep Insights Copilot' โดยเจ้าระบบนี้จะต้องมีความสามารถหลัก 2 อย่างครับ:"
     1.  **"1. answer natural-language questions grounded in company data/docs"**
-        *   "คือต้องตอบคำถามโดยอ้างอิงจากข้อมูลและเอกสารจากทางบริษัท ตรงนี้ผมปิ๊งขึ้นมาทันทีว่า นี่แหละคือคอนเซปต์และ Use Case ของการปรับใช้ **RAG (Retrieval-Augmented Generation)** ในธุรกิจจริง เพื่อไม่ให้ AI มั่วคำตอบ (Hallucination)"
+        *   "คือต้องตอบคำถามโดยอ้างอิงจากข้อมูลและเอกสารจากทางบริษัท ตรงนี้ผมปิ๊งขึ้นมาทันทีว่า นี่แหละคือคอนเซปต์และ Use Case ของการปรับใช้ RAG ในธุรกิจจริง เพื่อไม่ให้ AI มั่วคำตอบ"
     2.  **"2. run safe, parameterized actions (SQL, KPI queries) via MCP tools"**
-        *   "ก็คือ RAG ตัวนี้ต้องมีความสามารถในการรันคำสั่ง SQL หรือดึงข้อมูล KPI ผ่านสิ่งที่เรียกว่า MCP Tools... สารภาพตามตรงครับว่าตอนที่อ่านเจอคำนี้ ผมยังไม่มั่นใจ 100% ว่า MCP คืออะไร รู้แค่ว่าเป็นคำศัพท์ที่เพิ่งเริ่มได้ยินบ่อยมาก ผมเลยรีบวงกลมตัวแดงๆ และขอโน้ตไว้ก่อนเลยว่า นี่คือเทคโนโลยีหลักที่ผมต้องไป Research เพิ่มเติมทันที เพื่อนำมาใช้เป็น Core Architecture ของโปรเจกต์นี้ครับ"
+        *   "ก็คือ RAG ตัวนี้ต้องมีความสามารถในการรันคำสั่ง SQL หรือดึงข้อมูล KPI ผ่านสิ่งที่เรียกว่า MCP Tools... ตอนที่อ่านเจอคำนี้ ผมยังไม่มั่นใจ 100% ว่า MCP คืออะไร รู้แค่ว่าเป็นคำศัพท์ที่ได้ยินบ่อยมาก ผมเลยรีบวงกลมตัวแดงๆ และขอโน้ตไว้ก่อนเลยว่า นี่คือเทคโนโลยีหลักที่ผมต้องไป Research เพิ่มเติม"
 
-*   **Requirement Analysis (Business & Guardrails):** "โอเค ต่อไปเราก็จะมาดูส่วนถัดไป คือเรื่องของ Business Requirements Spec ส่วนสำคัญที่ผมสังเกตเห็นก็คือตัวคำถามตัวอย่างที่ผมต้องใช้ถามกับ RAG อย่างเช่นเรื่อง Top 5 root causes หรือเรื่อง Churned customers"
-    *   "และอีกส่วนที่สำคัญมากคือ **AI Guardrails** ครับ ซึ่งโจทย์ระบุชัดเจนว่า 'read-only DB access; PII (Sensitive Data) must be masked; every tool call must be parameterized & logged' ตรงส่วนนี้เป็นเรื่อง Security แบบเจาะลึก ซึ่งผมยอมรับว่าตอนแรกยังไม่มั่นใจนัก ผมเลยวงกลมตัวแดงๆ ไว้เลยว่า นี่คือส่วนที่ผมต้องไปทำ Study Guide และศึกษาเพิ่มอย่างจริงจัง เพื่อนำมาสร้างเป็นฐานของ Architecture โปรเจกต์นี้ให้มีความปลอดภัยระดับ Enterprise ครับ"
+*   **Requirement Analysis (Guardrails):**
+    *   "3. และอีกส่วนที่สำคัญมากคือ **AI Guardrails** ครับ ซึ่งโจทย์ระบุชัดเจนว่า 'read-only DB access; PII (Sensitive Data) must be masked; every tool call must be parameterized & logged' ตรงส่วนนี้เป็นเรื่อง Security แบบเจาะลึก ซึ่งเป็นเรื่องที่ผมยังไม่มั่นใจเหมือนกัน ผมเลยวงกลมตัวแดงๆ ไว้เลยว่า นี่คือส่วนที่ผมต้องไปทำ Study Guide และศึกษาเพิ่ม โดยเฉพาะเรื่องของการทำ PII (Sensitive Data)"
 
-*   **Requirement Analysis (What to build):** "ถัดมาคือส่วนของ 'What to build (minimum)' ผมอ่านคร่าวๆ ก็พบเรื่องที่ต้องกังวลอีกครับ คือเรื่องของ **Data Layer** ที่โจทย์ระบุว่า 'Postgres (star schema or 3NF) + dbt transformations + data tests' ซึ่งเป็นเรื่องของ Data Engineering เต็มตัว และตัวผมเองก็ไม่ได้ทบทวน หรือคุ้นชินกับเรื่องพวกนี้มาสักพักแล้ว ทำให้ผมตระหนักว่า ถ้าจะทำระบบนี้ออกมาให้ดี ผมต้องไปทำ Study Guide และ Re-skill ทบทวนเรื่องพวกนี้ใหม่หมดเลย"
-    *   "นอกจากนี้ในส่วนของ **Retrieval Layer** โจทย์อนุญาตให้ใช้ 'pgvector' ได้ ซึ่งผมก็โน้ตไว้ว่าต้องไปทำ Study Guide เรื่องนี้เพิ่มเติมเช่นกัน เพื่อให้มั่นใจว่าจะนำมาประกอบร่างเป็น Architecture ที่สมบูรณ์ได้ครับ"
+*   **Requirement Analysis (What to build):**
+    *   "4. ถัดมาคือส่วนของ 'What to build (minimum)' ผมอ่านคร่าวๆ ก็พบเรื่องที่ต้องศึกษาเพิ่มเติมอีก คือเรื่องของ **Data Layer** ที่โจทย์ระบุว่า 'Postgres (star schema or 3NF) + dbt transformations + data tests' ซึ่งเป็นเรื่องของ Data Engineering เต็มตัว และตัวผมเองก็ไม่ได้ทบทวน หรือคุ้นชินกับเรื่องพวกนี้มาสักพักแล้ว ทำให้ผมตระหนักว่า ถ้าจะทำระบบนี้ออกมาให้ดี ผมต้องไปทำ Study Guide และ Re-skill ทบทวนเรื่องพวกนี้ใหม่หมดเลย"
+    *   "5. นอกจากนี้ในส่วนของ **Retrieval Layer** โจทย์อนุญาตให้ใช้ 'pgvector' ได้ ซึ่งผมก็โน้ตไว้ว่าต้องไปทำ Study Guide เรื่องนี้เพิ่มเติมเช่นกัน"
 
-*   **Requirement Analysis (Deployment-grade):** "สุดท้ายคือส่วนของ **Deployment-grade (DevOps Engineer track)** ครับ พูดตรงๆ ว่าในส่วนนี้เราคุ้นชินอยู่บ้างแล้ว (เช่น github, containerization, CI) แต่พอเป็น Context ของ AI System ที่ต้องมีเรื่อง observability, secret hygiene, rate limits, circuit breakers รวมไปถึง cost & safety controls ด้วยแล้ว ก็ต้องทำการบ้านเยอะอยู่พอสมควรครับ ผมเลยทำ Study Guide เจาะลึกเรื่องนี้ไว้เป็น Check-list เพื่อให้มั่นใจว่าผมทำครบทุกข้อตามมาตรฐาน Enterprise ครับ"
+*   **Requirement Analysis (Deployment-grade):**
+    *   "6. สุดท้ายคือส่วนของ **Deployment-grade (DevOps Engineer track)** ครับ ในส่วนนี้เราคุ้นชินอยู่บ้างแล้ว (เช่น github, containerization, CI) แต่พอเป็น Context ของ AI System ที่ต้องมีเรื่อง observability, secret hygiene, rate limits, circuit breakers รวมไปถึง cost & safety controls ด้วยแล้ว ก็ต้องทำการบ้านเยอะอยู่พอสมควรครับ"
 
-*   **Transition:** "...หลังจากทำความเข้าใจโจทย์ และไปทำการบ้าน Re-skill ศึกษาเรื่อง MCP, AI Guardrails, dbt, pgvector และ Deployment-grade เพิ่มเติมอย่างหนักแล้ว ผมก็นำ Requirements ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อให้เกิดเป็น MVP ที่ส่งมอบได้จริงครับ ซึ่งเดี๋ยวเราจะไปดู Architecture ของระบบนี้กันครับ"
+*   **Summary & Next Steps:** "สรุปจากการอ่าน Assignment นะครับ ผมได้ข้อมูลชัดเจนว่า MVP ตัวนี้ต้องประกอบด้วย RAG, การดึงข้อมูลผ่าน Tool, และระบบ Security ที่แน่นหนา สิ่งที่ผมต้องไปทำการบ้านศึกษาเพิ่มอย่างหนักก็คือ MCP, PII Masking, dbt Data Engineering, pgvector และมาตรฐาน Deployment-grade ของ AI...
+และเมื่อผมศึกษาเรื่องเหล่านี้จนครบถ้วนแล้ว ใน Step ถัดไปผมก็นำ Requirements ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อลงมือสร้าง Architecture และระบบนี้ขึ้นมาจริงๆ ครับ ซึ่งเดี๋ยวเราจะไปดูผลลัพธ์ในส่วนนั้นกันครับ"
 
 ---
 
