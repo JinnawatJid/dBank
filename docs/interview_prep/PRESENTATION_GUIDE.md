@@ -39,13 +39,23 @@
 
 *   **1. User Interaction (Next.js & FastAPI):**
     *   "เริ่มจากฝั่งซ้ายบนนะครับ เวลา Operation Support ใช้งานจริง เขาจะพิมพ์คำถามผ่าน UI ที่สร้างด้วย **Next.js** ครับ คำถามนี้จะถูกแพ็คส่งมาเป็น JSON วิ่งเข้ามาที่ **FastAPI Backend** ซึ่งทำหน้าที่เป็นคอยควบคุม Flow ทั้งหมดครับ"
-    *   "หน้าตาของ JSON Payload ที่ Next.js ส่งมาที่ Endpoint `/api/v1/ask` ก็จะเรียบง่ายแบบนี้เลยครับ:
+    *   "หน้าตาของ Request Payload ที่ Next.js ส่งมา ก็จะเรียบง่ายแบบนี้เลยครับ:
         ```json
+        POST /api/v1/ask
         {
           "query": "What caused the spike in tickets?"
         }
         ```
-        และฝั่ง Backend ก็จะตอบกลับมาเป็น JSON ที่มีทั้งคำตอบและรายชื่อ Tools ที่ AI เลือกใช้ครับ"
+        และฝั่ง Backend ก็จะตอบกลับมาเป็น JSON ที่มีทั้งคำตอบและรายชื่อ Tools ที่ AI เลือกใช้ครับ หน้าตาประมาณนี้ครับ:
+        ```json
+        {
+          "answer": "The spike in tickets was primarily caused by login failures following the release of Virtual Bank App v1.2.",
+          "tools_used": [
+            "kpi.top_root_causes",
+            "kb.search"
+          ]
+        }
+        ```"
 
 *   **2. LLM & The MCP Engine:**
     *   "พอ FastAPI รับคำถามมา มันจะส่ง Prompt และ Context ไปให้ **Google AI Studio (LLM)** ช่วยคิดครับ"
