@@ -158,6 +158,31 @@
             *   **เราทำยังไง?** เราให้ dbt เอาข้อมูลจาก Staging มา Join กันเป็น Star Schema แล้วบันทึกเป็น Table
             *   **โค้ด/โฟลเดอร์ที่เกี่ยวข้อง:** โฟลเดอร์ `data/dbank_analytics/models/marts/`
             *   **อธิบายตอนสัมภาษณ์:** "ขั้นตอนสุดท้าย ผมใช้คำสั่ง `dbt run` เพื่อให้มันรัน SQL ในโฟลเดอร์ `marts` ครับ (เช่น `fact_tickets.sql`, `dim_customers.sql`) เพื่อประกอบร่างเป็น Star Schema แล้วเซฟเป็น Physical Table ลง Database จริงๆ ตรงนี้คือจุดสิ้นสุดกระบวนการ ELT ครับ... และหลังจากนี้ FastAPI Backend ค่อยถูกรันขึ้นมา เพื่อให้ MCP เข้ามาคิวรีข้อมูลก้อนนี้ไปใช้ครับ"
+            *   **ตัวอย่างโค้ดที่สำคัญ:**
+                ```sql
+                -- ตัวอย่าง fact_tickets.sql (ตารางศูนย์กลางของ Star Schema)
+                WITH stg_tickets AS (
+                    SELECT * FROM {{ ref('stg_tickets') }}
+                ),
+                dim_customers AS (
+                    SELECT * FROM {{ ref('dim_customers') }}
+                )
+
+                SELECT
+                    -- 1. การสร้าง Surrogate Key เพื่อเชื่อมกับ Dimension Table
+                    {{ dbt_utils.generate_surrogate_key(['t.ticket_id']) }} as ticket_key,
+                    t.ticket_id,
+                    c.customer_key,
+                    t.issue_type,
+                    t.status,
+                    t.created_at,
+                    t.resolved_at,
+                    -- 2. การสร้าง Derived Metrics เตรียมไว้ให้ AI คิวรีง่ายๆ (หาเวลาแก้ปัญหา)
+                    EXTRACT(EPOCH FROM (t.resolved_at - t.created_at))/3600 AS resolution_time_hours
+                FROM stg_tickets t
+                -- 3. การ Join ข้อมูลลูกค้า (Dimension) เข้ากับตั๋ว (Fact)
+                LEFT JOIN dim_customers c ON t.customer_id = c.customer_id
+                ```
 
         *(Note for Jinnawat - Orchestration: In our system, all these steps are fully automated to run sequentially inside Docker via the `dbank_dbt_init` service before the backend API ever boots up.)*
 
