@@ -191,10 +191,37 @@
         *(Note for Jinnawat - Orchestration: In our system, all these steps are fully automated to run sequentially inside Docker via the `dbank_dbt_init` service before the backend API ever boots up.)*
 
     *   **"เส้นทางที่สอง: Unstructured Data (pgvector)"**
-        *   **เราทำยังไง?** เราใช้ Python Script แบ่งไฟล์เอกสารเป็นท่อนๆ (Chunking) แล้วส่งไปแปลงเป็น Vector (ตัวเลข) ผ่าน Google AI ก่อนเซฟลง PostgreSQL ครับ
-        *   **โค้ด/โฟลเดอร์ที่เกี่ยวข้อง:** ไฟล์ `scripts/embed_kb.py` และโฟลเดอร์เอกสาร `data/knowledge_base/`
-        *   **อธิบายตอนสัมภาษณ์:** "สำหรับข้อมูลประเภทที่สอง คือพวกเอกสารคู่มือที่เป็นไฟล์ Markdown หรือไฟล์ Text ต่างๆ ผมเขียน Python Embedder Script (`embed_kb.py`) ขึ้นมาจัดการครับ โค้ดตัวนี้จะทำหน้าที่หั่นเอกสารยาวๆ ออกเป็นท่อนเล็กๆ (Chunking) แล้วโยนไปให้ Google AI แปลงข้อความพวกนั้นเป็นตัวเลข (Vector Embeddings)
-        จากนั้นก็นำตัวเลขพวกนี้ไปบันทึกใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ของ PostgreSQL ครับ ทำให้ระบบ RAG ของเราสามารถค้นหาเนื้อหาเอกสารที่มีความหมายคล้ายเคียงกับคำถามของ User เพื่อนำไปใช้เป็น Context ให้ LLM ตอบคำถามได้อย่างแม่นยำครับ"
+        *   **เราทำยังไง?** เราใช้ Python Script แบ่งไฟล์เอกสารคู่มือเป็นท่อนๆ (Chunking) แล้วส่งไปแปลงเป็น Vector (ตัวเลข) ผ่าน Google AI ก่อนเซฟลง PostgreSQL
+        *   **โค้ด/โฟลเดอร์ที่เกี่ยวข้อง:** สคริปต์ `scripts/embed_kb.py` และเอกสารในโฟลเดอร์ `data/kb/`
+        *   **อธิบายตอนสัมภาษณ์:** "สำหรับข้อมูลประเภทที่สอง คือพวกเอกสารคู่มือต่างๆ (เช่น วิธีแก้ปัญหาล็อกอิน) ผมเก็บมันไว้ในรูปแบบไฟล์ Markdown ครับ จากนั้นผมเขียน Python Embedder Script ขึ้นมา โค้ดตัวนี้จะไปกวาดอ่านไฟล์เอกสารทั้งหมด แล้วหั่นข้อความยาวๆ ออกเป็นท่อนสั้นๆ (Chunking) เพื่อไม่ให้เกิน Context Limit ของ AI
+        จากนั้นมันจะส่งข้อความแต่ละท่อนไปให้ Google AI แปลงเป็นตัวเลข (Vector Embeddings) และนำไปเซฟลงตาราง `kb_embeddings` ใน PostgreSQL ผ่าน Extension **pgvector** ครับ ขั้นตอนนี้คือหัวใจสำคัญที่ทำให้ RAG ของเราสามารถค้นหาคู่มือที่ตรงกับปัญหาของ User มาตอบได้อย่างแม่นยำครับ"
+        *   **ตัวอย่างไฟล์เอกสารคู่มือ:**
+            ```markdown
+            <!-- ตัวอย่าง data/kb/login_issues.md -->
+            # Troubleshooting: Customer Login Issues
+            ### 1. "Invalid Username or Password" Error
+            - Verify Credentials: Ask the customer to ensure there are no trailing spaces...
+            - Account Lockout: After 5 consecutive failed login attempts, the account is temporarily locked...
+            ```
+        *   **ตัวอย่างโค้ดที่สำคัญ (Chunking & Embedding):**
+            ```python
+            # ตัวอย่าง scripts/embed_kb.py
+            # 1. อ่านไฟล์ Markdown ทั้งหมด
+            for file_path in md_files:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    text = f.read()
+
+                # 2. หั่นข้อความยาวๆ เป็นท่อนสั้นๆ (Chunk size = 800)
+                chunks = chunk_text(text, chunk_size=800, overlap=100)
+
+                # 3. วนลูปแปลงแต่ละท่อนเป็น Vector ด้วย Google AI
+                for i, chunk in enumerate(chunks):
+                    embedding = get_embedding(chunk) # คุยกับ Google AI API
+                    records_to_insert.append((filename, i, chunk, embedding))
+
+            # 4. บันทึกข้อความและ Vector ลงตาราง kb_embeddings ใน PostgreSQL (pgvector)
+            execute_batch(cur, insert_sql, records_to_insert)
+            ```
 
 *   **4. Security Guardrails & Tool Execution:**
     *   "สุดท้าย เมื่อ Tool จาก MCP Server วิ่งไปดึงข้อมูลจาก Database ที่เตรียมไว้ ผมตั้งกฎเหล็ก (Guardrails) ไว้เลยว่า การคิวรีทุกครั้งต้องเป็นแบบ **'Read-Only SQL'** เท่านั้น และข้อมูล PII ต่างๆ จะต้องถูก Masking ตั้งแต่ชั้น FastAPI ก่อนที่ข้อมูลจะหลุดไปถึง LLM ครับ"
