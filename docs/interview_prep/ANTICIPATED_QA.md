@@ -6,7 +6,15 @@ This document contains expected questions from a CTO or technical panel based on
 
 ### Category 1: Architecture & Data Engineering
 
-**Q1: Why did you choose dbt for this project instead of just writing SQL scripts or relying on the backend to transform data?**
+**Q1: ทำไมระบบถึงเลือกออกแบบ Data Pipeline เป็นแบบ ELT (Extract, Load, Transform) แทนที่จะเป็น ETL แบบดั้งเดิมล่ะ?**
+**Answer:** "เหตุผลหลักคือเรื่องของ Performance คอขวด และความยืดหยุ่นครับ
+ถ้าเราใช้ ETL แบบเดิมที่เอาข้อมูลไป Transform ใน Python ก่อน สมมติในสเกลจริงของ Virtual Bank อย่าง dBank ที่อาจจะมีข้อมูล Transaction หรือ Ticket ถึง 10-100 ล้านเรคคอร์ด การใช้ Python อ่านไฟล์ CSV ทั้งหมดมาพักไว้ใน RAM เพื่อทำ Transform จะทำให้เกิดปัญหาคอขวด ประมวลผลช้า หรือเซิร์ฟเวอร์ค้าง (Out of Memory) ไปเลยครับ
+
+ดังนั้นเราจึงแก้ปัญหานี้ด้วยท่า **ELT** โดยเปลี่ยนให้ Python ทำหน้าที่แค่ Extract แล้วโหลด (Load) ข้อมูลดิบทั้งหมดโยนโครมลงไปใน PostgreSQL ที่ schema `raw` ทันทีครับ เพราะ Database อย่าง PostgreSQL ถูกสร้างมาเพื่อจัดการกับข้อมูลมหาศาลอยู่แล้ว เราจึงยืมพลังประมวลผล (Compute Power) ของมันมาทำ Transform ด้วย dbt แทน
+
+และอีกข้อดีที่สำคัญมากคือ **ความยืดหยุ่น** ครับ เพราะเรามีข้อมูลดิบต้นฉบับเก็บไว้ที่ schema `raw` เสมอ ในอนาคตถ้า Business เปลี่ยน Requirement เช่น อยากเปลี่ยนสูตรคำนวณ KPI ใหม่ เราก็สามารถไปแก้ Logic ใน dbt แล้วรันดึงข้อมูลจาก `raw` มาคำนวณใหม่ได้ทันที โดยไม่ต้องกลับไปเริ่มอ่านไฟล์ CSV ใหม่ตั้งแต่ต้นครับ"
+
+**Q2: Why did you choose dbt for this project instead of just writing SQL scripts or relying on the backend to transform data?**
 **Answer:** "In a corporate banking context, data integrity and modularity are paramount. I chose dbt because it treats SQL like software. It allows us to build staging and mart layers (a Star Schema) modularly, ensures idempotency, and most importantly, allows us to write built-in data tests. We need to guarantee the LLM is querying clean, validated data, not raw, messy logs."
 
 **Q2: You used PostgreSQL with `pgvector`. Why not a dedicated vector database like Pinecone or Weaviate?**
