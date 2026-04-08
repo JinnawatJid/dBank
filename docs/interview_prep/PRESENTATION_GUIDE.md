@@ -98,6 +98,17 @@
     *   "ถ้าเราซูมดูเฉพาะ Data Pipeline จะเห็นภาพชัดขึ้นแบบนี้ครับ การทำงานจะแบ่งเป็น 2 เส้นทางหลักๆ"
     *   **"เส้นทางแรก: Structured Data (dbt)"**
         *   "เราเริ่มจากไฟล์ CSV (Customers, Tickets) โดยผมเขียน Python Init Script โหลดข้อมูลดิบพวกนี้เข้าไปเก็บใน PostgreSQL ที่ schema ชื่อ `raw` ครับ ซึ่ง schema นี้ AI จะไม่มีสิทธิ์เข้าถึงเด็ดขาด"
+        *   "สำหรับตัว Python Init Script ที่ใช้โหลดข้อมูล ผมเลือกใช้ท่า Bulk Insert ผ่านคำสั่ง `COPY` ของ `psycopg2` แทนการ Insert ทีละบรรทัด เพื่อให้ระบบอิมพอร์ตข้อมูลหลักหมื่นหลักแสนเรคคอร์ดได้ไวที่สุดครับ หน้าตาโค้ดจะเป็นประมาณนี้ครับ:
+            ```python
+            # อ่านชื่อ Column จาก Header ของ CSV
+            columns = header.split(',')
+
+            # โหลดข้อมูลแบบ Bulk Insert เข้าไปที่ schema 'raw'
+            cur.copy_expert(
+                f"COPY raw.customers ({','.join(columns)}) FROM STDIN WITH (FORMAT CSV, HEADER)",
+                file_object
+            )
+            ```"
         *   "จากนั้น พระเอกของเราคือ **dbt (Data Build Tool)** จะเข้ามารับช่วงต่อ มันจะดึงข้อมูลจาก `raw` ไปทำ Data Cleansing, Transformation, และรัน Data Tests เพื่อเช็คว่าไม่มีข้อมูลแปลกปลอมหลุดมา จนสุดท้ายได้ออกมาเป็นตารางแบบ **Star Schema** (Fact & Dimension tables) ไปเก็บไว้ที่ schema `marts` ซึ่งนี่คือที่ๆ ข้อมูลสะอาดและพร้อมให้ MCP Tool (อย่าง `sql.query`) เข้ามาคิวรีดึงข้อมูลไปใช้ครับ"
     *   **"เส้นทางที่สอง: Unstructured Data (pgvector)"**
         *   "สำหรับพวกเอกสารคู่มือที่เป็นไฟล์ Markdown ผมเขียน Python Embedder Script เพื่อใช้ Google AI แปลงข้อความเป็นตัวเลข (Vector) แล้วเอาไปยัดใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ครับ ทำให้ RAG ของเราสามารถค้นหาเอกสารที่มีเนื้อหาคล้ายเคียงกับคำถามของ User ได้"
