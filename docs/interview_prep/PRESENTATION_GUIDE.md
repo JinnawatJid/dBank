@@ -67,8 +67,19 @@
         # Prompt (User Query)
         "User: What caused the spike in tickets?"
         ```"
-    *   "จุดที่เป็นไฮไลท์คือตรงนี้ครับ LLM ไม่ได้ตอบกลับมาเป็น Text ธรรมดาเสมอไป แต่มันฉลาดพอที่จะบอกว่า 'ฉันต้องดึงข้อมูลเพิ่ม' และมันจะสั่งงานผ่าน **MCP Protocol** กลับมาที่ **MCP Server** ที่ผมสร้างไว้ดักรอคำสั่งโดยเฉพาะครับ"
-    *   "โดยใน MCP Server นี้ ผมเตรียม Tool ไว้ 3 ตัวหลักๆ คือ `sql.query` (สำหรับคำถามเจาะจง), `kpi.top_root_causes` (สำหรับดูภาพรวม), และ `kb.search` (สำหรับหาเอกสาร RAG) ครับ"
+    *   "ในบางกรณี LLM ก็จะไม่ได้ตอบกลับมาเป็นแค่ข้อความธรรมดา แต่ต้องดึงข้อมูลเพิ่ม มันก็จะสั่งงานผ่าน **MCP Protocol** กลับมาที่ **MCP Server** ที่เราสร้างไว้ครับ ซึ่งหน้าตาของ Protocol ที่ LLM ส่งมาขอเรียกใช้ Tool จะเป็นแบบนี้ครับ:
+        ```json
+        {
+          "function_call": {
+            "name": "sql.query",
+            "args": {
+              "template": "SELECT COUNT(*) FROM marts.fact_tickets WHERE issue_type = :issue",
+              "params": { "issue": "login_failure" }
+            }
+          }
+        }
+        ```"
+    *   "โดยใน MCP Server นี้ ผมเตรียม Tool ไว้ 3 ตัวหลักๆ คือ `sql.query` (สำหรับรัน SQL เจาะจง), `kpi.top_root_causes` (สำหรับดูภาพรวม KPI), และ `kb.search` (สำหรับหาเอกสาร RAG) ครับ"
 
 *   **3. The Data Foundation (dbt & PostgreSQL):**
     *   "ทีนี้มาดูฐานรากของระบบที่ฝั่ง Data Layer ด้านล่างกันบ้างครับ ก่อนที่ Tools พวกนี้จะทำงานได้ เราต้องมีข้อมูลที่พร้อมใช้งานก่อน"
