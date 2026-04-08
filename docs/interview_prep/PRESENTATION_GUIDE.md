@@ -139,6 +139,20 @@
                     -- เลือกเฉพาะข้อมูลที่ AI ต้องใช้
                 FROM source
                 ```
+                *และในส่วนของการทำ Data Tests เราจะใช้ไฟล์ `schema.yml` เพื่อตั้งกฎเช็คข้อมูลอัตโนมัติแบบนี้ครับ:*
+                ```yaml
+                # ตัวอย่าง schema.yml (ตั้งกฎดักข้อมูลขยะ)
+                models:
+                  - name: dim_customers
+                    columns:
+                      - name: customer_id
+                        tests:
+                          - unique      # เช็คว่าห้ามมีลูกค้ารหัสซ้ำกัน
+                          - not_null    # เช็คว่ารหัสลูกค้าห้ามเป็นค่าว่าง
+                      - name: email_masked
+                        tests:
+                          - not_null    # อีเมลที่ mask แล้วห้ามหลุดเป็นค่าว่าง
+                ```
 
         *   **"3. `marts` (Business Logic & Star Schema)"**
             *   **เราทำยังไง?** เราให้ dbt เอาข้อมูลจาก Staging มา Join กันเป็น Star Schema แล้วบันทึกเป็น Table
