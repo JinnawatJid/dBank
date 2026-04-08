@@ -20,7 +20,11 @@
 
 *   **Requirement Analysis (Business & Guardrails):** "โอเค ต่อไปเราก็จะมาดูส่วนถัดไป คือเรื่องของ Business Requirements Spec ส่วนสำคัญที่ผมสังเกตเห็นก็คือตัวคำถามตัวอย่างที่ผมต้องใช้ถามกับ RAG อย่างเช่นเรื่อง Top 5 root causes หรือเรื่อง Churned customers"
     *   "และอีกส่วนที่สำคัญมากคือ **AI Guardrails** ครับ ซึ่งโจทย์ระบุชัดเจนว่า 'read-only DB access; PII (Sensitive Data) must be masked; every tool call must be parameterized & logged' ตรงส่วนนี้เป็นเรื่อง Security แบบเจาะลึก ซึ่งผมยอมรับว่าตอนแรกยังไม่มั่นใจนัก ผมเลยวงกลมตัวแดงๆ ไว้เลยว่า นี่คือส่วนที่ผมต้องไปทำ Study Guide และศึกษาเพิ่มอย่างจริงจัง เพื่อนำมาสร้างเป็นฐานของ Architecture โปรเจกต์นี้ให้มีความปลอดภัยระดับ Enterprise ครับ"
-*   **Transition:** "...หลังจากทำความเข้าใจโจทย์และศึกษาเรื่อง MCP กับ AI Guardrails เพิ่มเติมแล้ว ผมก็นำ Requirements ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อให้เกิดเป็น MVP ที่ใช้งานได้จริงครับ ซึ่งเดี๋ยวเราจะไปดู Architecture ของระบบนี้กันครับ"
+
+*   **Requirement Analysis (What to build):** "ถัดมาคือส่วนของ 'What to build (minimum)' ผมอ่านคร่าวๆ ก็พบเรื่องที่ต้องกังวลอีกครับ คือเรื่องของ **Data Layer** ที่โจทย์ระบุว่า 'Postgres (star schema or 3NF) + dbt transformations + data tests' ซึ่งเป็นเรื่องของ Data Engineering เต็มตัว และตัวผมเองก็ไม่ได้ทบทวน หรือคุ้นชินกับเรื่องพวกนี้มาสักพักแล้ว ทำให้ผมตระหนักว่า ถ้าจะทำระบบนี้ออกมาให้ดี ผมต้องไปทำ Study Guide และ Re-skill ทบทวนเรื่องพวกนี้ใหม่หมดเลย"
+    *   "นอกจากนี้ในส่วนของ **Retrieval Layer** โจทย์อนุญาตให้ใช้ 'pgvector' ได้ ซึ่งผมก็โน้ตไว้ว่าต้องไปทำ Study Guide เรื่องนี้เพิ่มเติมเช่นกัน เพื่อให้มั่นใจว่าจะนำมาประกอบร่างเป็น Architecture ที่สมบูรณ์ได้ครับ"
+
+*   **Transition:** "...หลังจากทำความเข้าใจโจทย์ และไป Re-skill ศึกษาเรื่อง MCP, AI Guardrails, dbt และ pgvector เพิ่มเติมแล้ว ผมก็นำ Requirements ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อให้เกิดเป็น MVP ที่ใช้งานได้จริงครับ ซึ่งเดี๋ยวเราจะไปดู Architecture ของระบบนี้กันครับ"
 
 ---
 
