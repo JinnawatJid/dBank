@@ -111,6 +111,13 @@
             ```"
         *   "**2. `staging` (Transform & Cleanse):** จากนั้นพระเอกของเราคือ **dbt** จะเข้ามารับช่วงต่อครับ มันจะดึงข้อมูลจาก `raw` มาทำ Staging ก่อน ซึ่งก็คือการทำ Data Cleansing เช่น การเลือกเฉพาะคอลัมน์ที่จำเป็น หรือการปรับชื่อคอลัมน์ให้เป็นมาตรฐานเดียวกัน รวมถึงการรัน **Data Tests** อย่างการเช็คค่าว่าง (Not Null) หรือเช็คข้อมูลซ้ำ (Unique) เพื่อป้องกันไม่ให้ข้อมูลขยะหลุดรอดไปกวนการทำงานของ AI ในภายหลังครับ"
         *   "**3. `marts` (Business Logic & Star Schema):** และ Stage สุดท้าย dbt จะเอาข้อมูลที่สะอาดแล้วจาก Staging มา Join และประกอบร่างกันเป็น **Star Schema** (มี Fact & Dimension tables) เซฟเป็นตารางลงใน schema `marts` ครับ... ซึ่งตรงนี้แหละครับ คือเหมืองข้อมูลที่สะอาดและพร้อมที่สุด ที่เราจะอนุญาตให้ AI (ผ่าน MCP `sql.query`) เข้ามาดึงข้อมูลไปตอบ User ได้ครับ"
+
+        *(Note for Jinnawat - Technical Details for Q&A: If the CTO asks HOW these steps are actually executed in the codebase, use this cheat sheet):*
+        *   *Step 1 (raw): We run `python scripts/generate_mock_data.py`. It uses `psycopg2`'s `cur.copy_expert` for fast bulk inserts.*
+        *   *Step 2 (staging): We run `dbt run --select staging`. It executes the SQL files in `data/dbank_analytics/models/staging/` and automatically checks the Data Tests defined in `schema.yml`.*
+        *   *Step 3 (marts): We run `dbt run`. It builds the Star Schema using the files in `data/dbank_analytics/models/marts/`.*
+        *   *Orchestration: In our system, all these steps are fully automated to run sequentially inside Docker via the `dbank_dbt_init` service before the backend API ever boots up.*
+
     *   **"เส้นทางที่สอง: Unstructured Data (pgvector)"**
         *   "สำหรับพวกเอกสารคู่มือที่เป็นไฟล์ Markdown ผมเขียน Python Embedder Script เพื่อใช้ Google AI แปลงข้อความเป็นตัวเลข (Vector) แล้วเอาไปยัดใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ครับ ทำให้ RAG ของเราสามารถค้นหาเอกสารที่มีเนื้อหาคล้ายเคียงกับคำถามของ User ได้"
 
