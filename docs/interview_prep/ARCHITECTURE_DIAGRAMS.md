@@ -135,3 +135,48 @@ graph LR
     DOCS --> EMBED
     EMBED -- "Chunk & Call Google Embeddings API" --> VEC
 ```
+
+---
+
+## 4. Star Schema (Marts Layer)
+**Purpose:** Show the specific data modeling structure you built using dbt to optimize for LLM/MCP SQL generation. This highlights your understanding of Dimensional Modeling and Data Security (PII Masking).
+
+```mermaid
+erDiagram
+    %% Fact Table
+    FACT_TICKETS {
+        string ticket_key PK "Surrogate Key"
+        string ticket_id
+        string customer_key FK "Links to Dim Customers"
+        string product_key FK "Links to Dim Products"
+        string issue_type "e.g., login_failure"
+        string status "Open / Closed"
+        timestamp created_at
+        timestamp resolved_at
+        float resolution_time_hours "Derived Metric"
+    }
+
+    %% Dimension Tables
+    DIM_CUSTOMERS {
+        string customer_key PK "Surrogate Key (dbt_scd_id)"
+        string customer_id
+        string email_hash "PII Masked (SHA-256)"
+        string phone_hash "PII Masked (SHA-256)"
+        int age_years "Derived from DOB (PII compliance)"
+        string customer_segment "e.g., Retail"
+        timestamp dbt_valid_from "SCD Type 2 Start Date"
+        timestamp dbt_valid_to "SCD Type 2 End Date"
+        boolean is_current "SCD Type 2 Active Flag"
+    }
+
+    DIM_PRODUCTS {
+        string product_key PK "Surrogate Key"
+        string product_id
+        string product_name
+        string category
+    }
+
+    %% Relationships
+    DIM_CUSTOMERS ||--o{ FACT_TICKETS : "Has Tickets"
+    DIM_PRODUCTS ||--o{ FACT_TICKETS : "Associated With"
+```
