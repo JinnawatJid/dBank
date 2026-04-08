@@ -91,12 +91,19 @@
     *   "โดยใน MCP Server นี้ ผมเตรียม Tool ไว้ 3 ตัวหลักๆ คือ `sql.query` (สำหรับรัน SQL เจาะจง), `kpi.top_root_causes` (สำหรับดูภาพรวม KPI), และ `kb.search` (สำหรับหาเอกสาร RAG) ครับ"
 
 *   **3. The Data Foundation (dbt & PostgreSQL):**
-    *   "ทีนี้มาดูฐานรากของระบบที่ฝั่ง Data Layer ด้านล่างกันบ้างครับ ก่อนที่ Tools พวกนี้จะทำงานได้ เราต้องมีข้อมูลที่พร้อมใช้งานก่อน"
-    *   "ผมออกแบบให้ Raw Data ถูกดูดเข้ามา แล้วใช้ **dbt Core** ทำหน้าที่ Transform และ Test ข้อมูลดิบพวกนี้ให้กลายเป็นข้อมูลที่สะอาดและพร้อมใช้ (Marts) เข้าไปเก็บใน **PostgreSQL** ครับ"
-    *   "ส่วนพวกไฟล์เอกสาร Knowledge Base ต่างๆ ผมก็เขียน Script ไปทำ Vector Embeddings และยิงเข้าไปเก็บใน PostgreSQL ผ่าน Extension pgvector ครับ"
+    *   "ทีนี้มาดูฐานรากของระบบที่ฝั่ง Data Layer ด้านล่างกันบ้างครับ ก่อนที่ Tools พวกนี้จะทำงานได้ เราต้องมีข้อมูลที่พร้อมใช้งานก่อน ในภาพรวมคือเรามีข้อมูลดิบที่ต้องใช้ dbt แปลงให้อยู่ในรูป Star Schema และมีไฟล์เอกสารที่ต้องทำเป็น Vector"
+
+    *(Note for Jinnawat: Switch to the "Data Engineering & Transformation Pipeline" diagram here.)*
+
+    *   "ถ้าเราซูมดูเฉพาะ Data Pipeline จะเห็นภาพชัดขึ้นแบบนี้ครับ การทำงานจะแบ่งเป็น 2 เส้นทางหลักๆ"
+    *   **"เส้นทางแรก: Structured Data (dbt)"**
+        *   "เราเริ่มจากไฟล์ CSV (Customers, Tickets) โดยผมเขียน Python Init Script โหลดข้อมูลดิบพวกนี้เข้าไปเก็บใน PostgreSQL ที่ schema ชื่อ `raw` ครับ ซึ่ง schema นี้ AI จะไม่มีสิทธิ์เข้าถึงเด็ดขาด"
+        *   "จากนั้น พระเอกของเราคือ **dbt (Data Build Tool)** จะเข้ามารับช่วงต่อ มันจะดึงข้อมูลจาก `raw` ไปทำ Data Cleansing, Transformation, และรัน Data Tests ต่างๆ จนสุดท้ายได้ออกมาเป็นตารางแบบ **Star Schema** (Fact & Dimension tables) ไปเก็บไว้ที่ schema `marts` ซึ่งนี่คือที่ๆ ข้อมูลสะอาดและพร้อมให้ MCP Tool (อย่าง `sql.query`) เข้ามาคิวรีดึงข้อมูลไปใช้ครับ"
+    *   **"เส้นทางที่สอง: Unstructured Data (pgvector)"**
+        *   "สำหรับพวกเอกสารคู่มือที่เป็นไฟล์ Markdown ผมเขียน Python Embedder Script เพื่อใช้ Google AI แปลงข้อความเป็นตัวเลข (Vector) แล้วเอาไปยัดใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ครับ ทำให้ RAG ของเราสามารถค้นหาเอกสารที่มีเนื้อหาคล้ายเคียงกับคำถามของ User ได้"
 
 *   **4. Security Guardrails & Tool Execution:**
-    *   "สุดท้าย เมื่อ Tool จาก MCP Server วิ่งไปดึงข้อมูลจาก Database ผมตั้งกฎเหล็ก (Guardrails) ไว้เลยว่า การคิวรีทุกครั้งต้องเป็นแบบ **'Read-Only SQL'** เท่านั้น และข้อมูล PII ต่างๆ จะต้องถูก Masking ตั้งแต่ชั้น FastAPI ก่อนที่ข้อมูลจะหลุดไปถึง LLM ครับ"
+    *   "สุดท้าย เมื่อ Tool จาก MCP Server วิ่งไปดึงข้อมูลจาก Database ที่เตรียมไว้ ผมตั้งกฎเหล็ก (Guardrails) ไว้เลยว่า การคิวรีทุกครั้งต้องเป็นแบบ **'Read-Only SQL'** เท่านั้น และข้อมูล PII ต่างๆ จะต้องถูก Masking ตั้งแต่ชั้น FastAPI ก่อนที่ข้อมูลจะหลุดไปถึง LLM ครับ"
 
 *   **Conclusion:** "สรุปก็คือ Architecture ตัวนี้ทำงานประสานกันตั้งแต่ Data Pipeline ขึ้นไปจนถึง UI โดยมี RAG และ MCP เป็นหัวใจหลักในการหาคำตอบ ภายใต้ Security Guardrails ที่รัดกุมครับ"
 
