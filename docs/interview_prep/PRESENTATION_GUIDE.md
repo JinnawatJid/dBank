@@ -18,8 +18,9 @@
     2.  **"2. run safe, parameterized actions (SQL, KPI queries) via MCP tools"**
         *   "ก็คือ RAG ตัวนี้ต้องมีความสามารถในการรันคำสั่ง SQL หรือดึงข้อมูล KPI ผ่านสิ่งที่เรียกว่า MCP Tools... สารภาพตามตรงครับว่าตอนที่อ่านเจอคำนี้ ผมยังไม่มั่นใจ 100% ว่า MCP คืออะไร รู้แค่ว่าเป็นคำศัพท์ที่เพิ่งเริ่มได้ยินบ่อยมาก ผมเลยรีบวงกลมตัวแดงๆ และขอโน้ตไว้ก่อนเลยว่า นี่คือเทคโนโลยีหลักที่ผมต้องไป Research เพิ่มเติมทันที เพื่อนำมาใช้เป็น Core Architecture ของโปรเจกต์นี้ครับ"
 
-*   **Deeper Analysis:** "จากจุดเริ่มต้นนั้น ผมก็อ่านเจาะลึกลงไปในเรื่อง Security Guardrails (ต้องบังคับใช้ Parameterized SQL และทำ PII Masking) และเรื่อง Data Layer (ต้องใช้ Postgres + dbt) ซึ่งทั้งหมดนี้..."
-*   **Transition:** "...ผมได้นำไป Research (โดยเฉพาะเรื่อง MCP) และนำ Requirement ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อส่งมอบ MVP ให้ทันเวลาครับ ซึ่งเดี๋ยวเราจะไปดู Architecture ผลลัพธ์กันครับ"
+*   **Requirement Analysis (Business & Guardrails):** "โอเค ต่อไปเราก็จะมาดูส่วนถัดไป คือเรื่องของ Business Requirements Spec ส่วนสำคัญที่ผมสังเกตเห็นก็คือตัวคำถามตัวอย่างที่ผมต้องใช้ถามกับ RAG อย่างเช่นเรื่อง Top 5 root causes หรือเรื่อง Churned customers"
+    *   "และอีกส่วนที่สำคัญมากคือ **AI Guardrails** ครับ ซึ่งโจทย์ระบุชัดเจนว่า 'read-only DB access; PII (Sensitive Data) must be masked; every tool call must be parameterized & logged' ตรงส่วนนี้เป็นเรื่อง Security แบบเจาะลึก ซึ่งผมยอมรับว่าตอนแรกยังไม่มั่นใจนัก ผมเลยวงกลมตัวแดงๆ ไว้เลยว่า นี่คือส่วนที่ผมต้องไปทำ Study Guide และศึกษาเพิ่มอย่างจริงจัง เพื่อนำมาสร้างเป็นฐานของ Architecture โปรเจกต์นี้ให้มีความปลอดภัยระดับ Enterprise ครับ"
+*   **Transition:** "...หลังจากทำความเข้าใจโจทย์และศึกษาเรื่อง MCP กับ AI Guardrails เพิ่มเติมแล้ว ผมก็นำ Requirements ทั้งหมดไปแตกเป็นแผนการทำงาน 3 วัน (3-Day Sprint Plan) เพื่อให้เกิดเป็น MVP ที่ใช้งานได้จริงครับ ซึ่งเดี๋ยวเราจะไปดู Architecture ของระบบนี้กันครับ"
 
 ---
 
