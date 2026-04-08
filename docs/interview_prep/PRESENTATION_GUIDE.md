@@ -6,28 +6,23 @@
 
 ---
 
-## 1. Introduction & The Thought Process (10 minutes)
+## 1. High-Level System Architecture (10 minutes)
 
-*   **The Approach:** "สิ่งแรกที่ผมทำหลังจากได้รับ Assignment คือการอ่านอย่างตั้งใจและตีความโจทย์ให้แตกครับ"
-*   **Requirement Analysis (Referencing the PDF):** "ถ้าเรามาดูใน PDF assignment ในหัวข้อ Scenario ไปพร้อมๆ กันนะครับ พอผมอ่านส่วนแรก ผมก็จับใจความได้ว่า เราเป็น Operation support team ที่มี Ticket เปิดมาเยอะมาก และเราต้องการตัวช่วยในเรื่องนี้ ซึ่งก็คือระบบ 'Deep Insights Copilot' โดยเจ้าระบบนี้จะต้องมีความสามารถหลัก 2 อย่างครับ:"
-    1.  **"1. answer natural-language questions grounded in company data/docs"**
-        *   "คือต้องตอบคำถามโดยอ้างอิงจากข้อมูลและเอกสารจากทางบริษัท ตรงนี้ผมปิ๊งขึ้นมาทันทีว่า นี่แหละคือคอนเซปต์และ Use Case ของการปรับใช้ RAG ในธุรกิจจริง เพื่อไม่ให้ AI มั่วคำตอบ"
-    2.  **"2. run safe, parameterized actions (SQL, KPI queries) via MCP tools"**
-        *   "ก็คือ RAG ตัวนี้ต้องมีความสามารถในการรันคำสั่ง SQL หรือดึงข้อมูล KPI ผ่านสิ่งที่เรียกว่า MCP Tools... ตอนที่อ่านเจอคำนี้ ผมยังไม่มั่นใจ 100% ว่า MCP คืออะไร รู้แค่ว่าเป็นคำศัพท์ที่ได้ยินบ่อยมาก ผมเลยรีบวงกลมตัวแดงๆ และขอโน้ตไว้ก่อนเลยว่า นี่คือเทคโนโลยีหลักที่ผมต้องไป Research เพิ่มเติม"
+*(Note for Jinnawat: For this section, you should display the "High-Level System Architecture" diagram. Keep the tone conversational, focusing on the big picture and business value before diving into the code later.)*
 
-*   **Requirement Analysis (Guardrails):**
-    *   "3. และอีกส่วนที่สำคัญมากคือ **AI Guardrails** ครับ ซึ่งโจทย์ระบุชัดเจนว่า 'read-only DB access; PII (Sensitive Data) must be masked; every tool call must be parameterized & logged' ตรงส่วนนี้เป็นเรื่อง Security แบบเจาะลึก ซึ่งเป็นเรื่องที่ผมยังไม่มั่นใจเหมือนกัน ผมเลยวงกลมตัวแดงๆ ไว้เลยว่า นี่คือส่วนที่ผมต้องไปทำ Study Guide และศึกษาเพิ่ม โดยเฉพาะเรื่องของการทำ PII (Sensitive Data)"
+*   **The Business Problem:** "สวัสดีครับ ก่อนที่เราจะลงลึกไปที่ Architecture ผมขอเล่าถึงภาพรวมของโจทย์ที่เรากำลังแก้กันก่อนนะครับ จาก Scenario ที่ได้มา ปัญหาหลักของเราคือ Operation support team มี Ticket เปิดเข้ามาเยอะมาก เราจึงต้องการระบบ 'Deep Insights Copilot' เพื่อมาช่วยลดภาระตรงนี้ครับ"
+*   **The Solution (Overview):** "ผมเลยออกแบบระบบนี้โดยตั้งเป้าให้มันเป็น 'ผู้ช่วยที่ฉลาด ปลอดภัย และอ้างอิงข้อมูลได้จริง' ซึ่งเพื่อที่จะบรรลุเป้าหมายนี้ ผมได้วางโครงสร้าง Architecture หลักออกเป็น 3 แกน หรือ 3 Pillars หลักๆ ครับ:"
 
-*   **Requirement Analysis (What to build):**
-    *   "4. ถัดมาคือส่วนของ 'What to build (minimum)' ผมอ่านคร่าวๆ ก็พบเรื่องที่ต้องศึกษาเพิ่มเติมอีก คือเรื่องของ **Data Layer** ที่โจทย์ระบุว่า 'Postgres (star schema or 3NF) + dbt transformations + data tests' ซึ่งเป็นเรื่องของ Data Engineering เต็มตัว และตัวผมเองก็ไม่ได้ทบทวน หรือคุ้นชินกับเรื่องพวกนี้มาสักพักแล้ว ทำให้ผมตระหนักว่า ถ้าจะทำระบบนี้ออกมาให้ดี ผมต้องไปทำ Study Guide และ Re-skill ทบทวนเรื่องพวกนี้ใหม่หมดเลย"
-    *   "5. นอกจากนี้ในส่วนของ **Retrieval Layer** โจทย์อนุญาตให้ใช้ 'pgvector' ได้ ซึ่งผมก็โน้ตไว้ว่าต้องไปทำ Study Guide เรื่องนี้เพิ่มเติมเช่นกัน"
+    1.  **"Pillar ที่ 1: Contextual Intelligence (RAG)"**
+        *   "สิ่งแรกคือ AI ต้องไม่มั่วครับ มันต้องตอบคำถามโดยอ้างอิงจากเอกสารและข้อมูลจริงของบริษัท ผมเลยใช้ Architecture แบบ RAG โดยมีฐานข้อมูล pgvector เป็นตัวช่วยค้นหาเนื้อหาที่เกี่ยวข้อง"
 
-*   **Requirement Analysis (Deployment-grade):**
-    *   "6. สุดท้ายคือส่วนของ **Deployment-grade (DevOps Engineer track)** ครับ ในส่วนนี้เราคุ้นชินอยู่บ้างแล้ว (เช่น github, containerization, CI) แต่พอเป็น Context ของ AI System ที่ต้องมีเรื่อง observability, secret hygiene, rate limits, circuit breakers รวมไปถึง cost & safety controls ด้วยแล้ว ก็ต้องทำการบ้านเยอะอยู่พอสมควรครับ"
+    2.  **"Pillar ที่ 2: Actionable Insights (MCP)"**
+        *   "นอกจากจะตอบคำถามจากเอกสารได้แล้ว ระบบต้องสามารถดึงข้อมูลจริงจาก Database มาตอบได้ด้วย ผมจึงเลือกใช้เทคโนโลยี MCP (Model Context Protocol) มาเป็นสะพานเชื่อมให้ AI สามารถสั่งรัน SQL Query แบบ Read-only ได้อย่างปลอดภัยครับ"
 
-*   **Summary & Next Steps:** "สรุปจากการอ่าน Assignment นะครับ ผมได้ข้อมูลชัดเจนว่า assignment ตัวนี้ต้องประกอบด้วย RAG, การดึงข้อมูลผ่าน Tool, และระบบ Security ที่แน่นหนา สิ่งที่ผมต้องไปทำการบ้านศึกษาเพิ่มอย่างหนักก็คือ MCP, PII Masking, dbt Data Engineering, pgvector และมาตรฐาน Deployment-grade ของ AI
+    3.  **"Pillar ที่ 3: Enterprise Security (Guardrails & Data Foundation)"**
+        *   "ความปลอดภัยคือเรื่องสำคัญที่สุดครับ ข้อมูลลูกค้าที่เป็น PII ต้องไม่หลุดไปที่ LLM เด็ดขาด ผมเลยสร้าง PII Masking Engine ขึ้นมาดักไว้ นอกจากนี้ในฝั่ง Data Layer ผมใช้ dbt มาช่วยทำ Data Transformation เพื่อให้มั่นใจว่าข้อมูลที่เรานำมาใช้นั้นถูกต้องและพร้อมใช้งานระดับ Production จริงๆ"
 
-เมื่อเราได้ข้อสรุปของโจทย์แล้ว และ note สำหรับการศึกษาเพิ่มเติม ต่อไปก็จะเป็นการวางแผนครับ"
+*   **Summary:** "สรุปก็คือ Architecture ตัวนี้ไม่ได้ออกแบบมาแค่ให้ทำงานได้แบบ MVP ทั่วไป แต่มันถูกคิดมาแบบ Defense-in-Depth ที่ผสาน RAG เข้ากับ MCP Tools ภายใต้ Security Guardrails ที่รัดกุมครับ เดี๋ยวเรามาเจาะลึกแต่ละส่วนใน Diagram ไปพร้อมๆ กันเลยครับ"
 
 ---
 
