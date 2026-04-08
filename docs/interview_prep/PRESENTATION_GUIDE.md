@@ -96,20 +96,11 @@
     *(Note for Jinnawat: Switch to the "Data Engineering & Transformation Pipeline" diagram here.)*
 
     *   "ถ้าเราซูมดูเฉพาะ Data Pipeline จะเห็นภาพชัดขึ้นแบบนี้ครับ การทำงานจะแบ่งเป็น 2 เส้นทางหลักๆ"
-    *   **"เส้นทางแรก: Structured Data (dbt)"**
-        *   "เราเริ่มจากไฟล์ CSV (Customers, Tickets) โดยผมเขียน Python Init Script โหลดข้อมูลดิบพวกนี้เข้าไปเก็บใน PostgreSQL ที่ schema ชื่อ `raw` ครับ ซึ่ง schema นี้ AI จะไม่มีสิทธิ์เข้าถึงเด็ดขาด"
-        *   "สำหรับตัว Python Init Script ที่ใช้โหลดข้อมูล ผมเลือกใช้ท่า Bulk Insert ผ่านคำสั่ง `COPY` ของ `psycopg2` แทนการ Insert ทีละบรรทัด เพื่อให้ระบบอิมพอร์ตข้อมูลหลักหมื่นหลักแสนเรคคอร์ดได้ไวที่สุดครับ หน้าตาโค้ดจะเป็นประมาณนี้ครับ:
-            ```python
-            # อ่านชื่อ Column จาก Header ของ CSV
-            columns = header.split(',')
-
-            # โหลดข้อมูลแบบ Bulk Insert เข้าไปที่ schema 'raw'
-            cur.copy_expert(
-                f"COPY raw.customers ({','.join(columns)}) FROM STDIN WITH (FORMAT CSV, HEADER)",
-                file_object
-            )
-            ```"
-        *   "จากนั้น พระเอกของเราคือ **dbt (Data Build Tool)** จะเข้ามารับช่วงต่อ มันจะดึงข้อมูลจาก `raw` ไปทำ Data Cleansing, Transformation, และรัน Data Tests เพื่อเช็คว่าไม่มีข้อมูลแปลกปลอมหลุดมา จนสุดท้ายได้ออกมาเป็นตารางแบบ **Star Schema** (Fact & Dimension tables) ไปเก็บไว้ที่ schema `marts` ซึ่งนี่คือที่ๆ ข้อมูลสะอาดและพร้อมให้ MCP Tool (อย่าง `sql.query`) เข้ามาคิวรีดึงข้อมูลไปใช้ครับ"
+    *   **"เส้นทางแรก: Structured Data แบบ Modern ELT"**
+        *   "ในส่วนนี้ผมออกแบบ Pipeline ให้เป็นแบบ **ELT (Extract, Load, Transform)** ซึ่งแบ่งออกเป็น 3 Stages หลักๆ เพื่อความคลีนของระบบครับ:"
+        *   "**1. `raw` (Extract & Load):** เราเริ่มจากไฟล์ CSV (Customers, Tickets) โดยผมเขียน Python Init Script เพื่อ Extract ข้อมูลดิบและ Load เข้าไปเก็บใน PostgreSQL ที่ schema `raw` ตรงๆ เลยครับ โดยใช้คำสั่ง `COPY` ของ `psycopg2` ทำ Bulk Insert เพื่อให้โหลดข้อมูลหลักแสนเรคคอร์ดได้เร็วที่สุด... และกฎเหล็กคือ schema `raw` นี้ AI จะไม่มีสิทธิ์มองเห็นเด็ดขาดครับ"
+        *   "**2. `staging` (Transform & Cleanse):** จากนั้นพระเอกของเราคือ **dbt** จะเข้ามารับช่วงต่อครับ มันจะดึงข้อมูลจาก `raw` มาทำ Staging ก่อน ซึ่งก็คือการทำ Data Cleansing เช่น แปลง Data Types, จัดการค่า Null, เปลี่ยนชื่อ Column ให้เป็นมาตรฐานเดียวกัน รวมถึงการรัน **Data Tests** เพื่อป้องกันไม่ให้ข้อมูลขยะหลุดรอดไปได้ครับ"
+        *   "**3. `marts` (Business Logic & Star Schema):** และ Stage สุดท้าย dbt จะเอาข้อมูลที่สะอาดแล้วจาก Staging มา Join และประกอบร่างกันเป็น **Star Schema** (มี Fact & Dimension tables) เซฟเป็นตารางลงใน schema `marts` ครับ... ซึ่งตรงนี้แหละครับ คือเหมืองข้อมูลที่สะอาดและพร้อมที่สุด ที่เราจะอนุญาตให้ AI (ผ่าน MCP `sql.query`) เข้ามาดึงข้อมูลไปตอบ User ได้ครับ"
     *   **"เส้นทางที่สอง: Unstructured Data (pgvector)"**
         *   "สำหรับพวกเอกสารคู่มือที่เป็นไฟล์ Markdown ผมเขียน Python Embedder Script เพื่อใช้ Google AI แปลงข้อความเป็นตัวเลข (Vector) แล้วเอาไปยัดใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ครับ ทำให้ RAG ของเราสามารถค้นหาเอกสารที่มีเนื้อหาคล้ายเคียงกับคำถามของ User ได้"
 
