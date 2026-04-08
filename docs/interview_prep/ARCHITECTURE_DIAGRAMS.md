@@ -198,33 +198,33 @@ graph TD
     User([User Request]):::user
 
     %% Layer 1: Input Guardrails
-    InputScan{"1. Input Guardrails\n(Prompt Injection Scan)"}:::guardrail
+    InputScan{"1. Input Guardrails - Prompt Injection Scan"}:::guardrail
     Block1[Block Request & Log Audit]:::guardrail
 
     User --> InputScan
     InputScan -- "Malicious (e.g., 'Ignore previous instructions')" --> Block1
 
     %% Layer 2: PII Masking
-    PIIMask["2. PII Tokenization\n(Microsoft Presidio)"]:::pii
+    PIIMask["2. PII Tokenization - Microsoft Presidio"]:::pii
 
     InputScan -- "Safe Request" --> PIIMask
 
     %% To LLM
-    LLM[Google AI Studio\n(Receives Masked Prompt)]:::llm
+    LLM[Google AI Studio - Receives Masked Prompt]:::llm
     PIIMask -- "John -> <PERSON_123>" --> LLM
 
     %% Layer 3: Execution Guardrails
     ToolCall["Tool Request: sql.query"]
     LLM --> ToolCall
 
-    Unmask["Unmask Arguments\n(<PERSON_123> -> John)"]:::pii
+    Unmask["Unmask Arguments - Token to John"]:::pii
     ToolCall --> Unmask
 
-    ExecGuard{"3. Execution Guardrails\n(SQL Injection Prevention)"}:::guardrail
+    ExecGuard{"3. Execution Guardrails - SQL Injection Prevention"}:::guardrail
     Unmask --> ExecGuard
 
     DB[(PostgreSQL)]:::db
-    ExecGuard -- "SET ROLE app_user (Read-Only)\nParameterized Query (text())" --> DB
+    ExecGuard -- "SET ROLE app_user - Parameterized Query" --> DB
 
     %% Layer 4: Output Guardrails
     Remask["Re-mask DB Results"]:::pii
@@ -234,7 +234,7 @@ graph TD
     LLMFinal[Final LLM Response]
     LLM --> LLMFinal
 
-    OutputScan{"4. Output Guardrails\n(PII Leakage Scan)"}:::guardrail
+    OutputScan{"4. Output Guardrails - PII Leakage Scan"}:::guardrail
     LLMFinal --> OutputScan
 
     Block2[Fail Closed & Block Response]:::guardrail
