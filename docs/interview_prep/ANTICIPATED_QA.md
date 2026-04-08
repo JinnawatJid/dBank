@@ -14,13 +14,17 @@ This document contains expected questions from a CTO or technical panel based on
 
 และอีกข้อดีที่สำคัญมากคือ **ความยืดหยุ่น** ครับ เพราะเรามีข้อมูลดิบต้นฉบับเก็บไว้ที่ schema `raw` เสมอ ในอนาคตถ้า Business เปลี่ยน Requirement เช่น อยากเปลี่ยนสูตรคำนวณ KPI ใหม่ เราก็สามารถไปแก้ Logic ใน dbt แล้วรันดึงข้อมูลจาก `raw` มาคำนวณใหม่ได้ทันที โดยไม่ต้องกลับไปเริ่มอ่านไฟล์ CSV ใหม่ตั้งแต่ต้นครับ"
 
-**Q2: Why did you choose dbt for this project instead of just writing SQL scripts or relying on the backend to transform data?**
+**Q2: ถ้าไปดูโค้ดในชั้น Staging (เช่น `stg_customers.sql`) ดูเหมือนจะแค่ SELECT คอลัมน์ออกมาเฉยๆ ไม่เห็นมีการทำ Cleansing อะไรซับซ้อนเลย ทำไมถึงบอกว่าทำ Cleansing?**
+**Answer:** "ในโปรเจกต์นี้ การทำ Cleansing พื้นฐานของเราคือการทำ **Schema Enforcement** และ **Column Selection** ครับ
+แทนที่เราจะใช้คำสั่ง `SELECT *` ดึงข้อมูลทั้งหมดจากตารางดิบ (raw) ซึ่งมีความเสี่ยงที่คอลัมน์ขยะหรือข้อมูลแปลกปลอมที่เพิ่มเข้ามาในอนาคตจะหลุดเข้ามาในระบบ เราเลือกที่จะระบุชื่อคอลัมน์แบบเจาะจง (Explicit Declaration) เพื่อกรองและดึงเฉพาะข้อมูลที่มี Business Value จริงๆ เท่านั้นไปใช้ต่อครับ นี่คือการคลีนข้อมูลขยะชั้นแรกที่ได้ผลและปลอดภัยที่สุดครับ"
+
+**Q3: Why did you choose dbt for this project instead of just writing SQL scripts or relying on the backend to transform data?**
 **Answer:** "In a corporate banking context, data integrity and modularity are paramount. I chose dbt because it treats SQL like software. It allows us to build staging and mart layers (a Star Schema) modularly, ensures idempotency, and most importantly, allows us to write built-in data tests. We need to guarantee the LLM is querying clean, validated data, not raw, messy logs."
 
-**Q2: You used PostgreSQL with `pgvector`. Why not a dedicated vector database like Pinecone or Weaviate?**
+**Q4: You used PostgreSQL with `pgvector`. Why not a dedicated vector database like Pinecone or Weaviate?**
 **Answer:** "For an MVP and often for early-stage production, minimizing infrastructure complexity is key. PostgreSQL is incredibly robust. By using the `pgvector` extension, we can keep our relational business data (like customer tables) and our vector embeddings in the exact same ecosystem. This simplifies deployment, backups, and access control. If vector scale becomes an issue (e.g., millions of dense embeddings), migrating to a specialized DB is easy, but starting with Postgres is the leanest, most reliable approach."
 
-**Q3: How do you handle schema evolution? If the database schema changes, how does the LLM know?**
+**Q5: How do you handle schema evolution? If the database schema changes, how does the LLM know?**
 **Answer:** "The MCP server is designed to allow the LLM to 'explore' the schema. Because it can execute read-only queries, a complex reasoning loop allows it to query `information_schema` to understand available tables and columns before writing its final query. However, for production, I would explicitly inject a schema summary (a data dictionary) into the LLM's system prompt or context window upon initialization to reduce token usage and API calls."
 
 ---

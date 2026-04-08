@@ -122,6 +122,23 @@
             *   **เราทำยังไง?** เราใช้คำสั่งของ dbt ดึงข้อมูลจาก `raw` มาทำความสะอาดและตรวจสอบ
             *   **โค้ด/โฟลเดอร์ที่เกี่ยวข้อง:** โฟลเดอร์ `data/dbank_analytics/models/staging/`
             *   **อธิบายตอนสัมภาษณ์:** "จากนั้นผมใช้คำสั่ง `dbt run --select staging` ครับ เพื่อรันโค้ด SQL ที่อยู่ในโฟลเดอร์ `staging` (เช่น `stg_tickets.sql`) ตรงนี้คือการทำ Cleansing ครับ และ dbt จะทำการเช็ค Data Tests ที่ผมเขียนเอาไว้ในไฟล์ `schema.yml` อัตโนมัติ (เช่น เช็ค Unique, Not Null) เพื่อกันข้อมูลขยะครับ"
+            *   **ตัวอย่างโค้ดที่สำคัญ:**
+                ```sql
+                -- ตัวอย่าง stg_customers.sql
+                WITH source AS (
+                    SELECT * FROM {{ source('raw', 'customers') }}
+                )
+                -- ทำ Schema Enforcement โดยการระบุชื่อ Column ที่ใช้งานจริงเท่านั้น
+                -- แทนที่จะใช้ SELECT * เพื่อป้องกันคอลัมน์ขยะหลุดเข้ามาระบบ
+                SELECT
+                    customer_id,
+                    first_name,
+                    last_name,
+                    email,
+                    phone
+                    -- เลือกเฉพาะข้อมูลที่ AI ต้องใช้
+                FROM source
+                ```
 
         *   **"3. `marts` (Business Logic & Star Schema)"**
             *   **เราทำยังไง?** เราให้ dbt เอาข้อมูลจาก Staging มา Join กันเป็น Star Schema แล้วบันทึกเป็น Table
