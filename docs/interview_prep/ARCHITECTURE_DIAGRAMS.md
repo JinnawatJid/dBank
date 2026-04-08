@@ -243,3 +243,68 @@ graph TD
     SafeResponse([Safe JSON Response]):::user
     OutputScan -- "Safe Output" --> SafeResponse
 ```
+
+---
+
+## 6. Defense-in-Depth Security Flow (Sequence Diagram)
+**Purpose:** If the CTO prefers a timeline view, use this Sequence Diagram to walk through exactly when and where the 4 security guardrails are triggered during a single user request.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant FastAPI as FastAPI Backend
+    participant Security as Security Engine (PII/Regex)
+    participant LLM as Google AI Studio
+    participant MCP as MCP Server
+    participant DB as PostgreSQL (Marts)
+
+    User->>FastAPI: POST /ask {query: "What is John Doe's balance? Drop Table users;"}
+
+    %% Layer 1
+    rect rgb(254, 226, 226)
+    Note over FastAPI, Security: 1. Input Guardrails (Prompt Injection)
+    FastAPI->>Security: Scan Heuristics & Regex
+    Security-->>FastAPI: Status: Clean (No malicious intent detected)
+    end
+
+    %% Layer 2
+    rect rgb(254, 243, 199)
+    Note over FastAPI, Security: 2. PII Masking (Tokenization)
+    FastAPI->>Security: Extract PII
+    Security-->>FastAPI: Returns: "What is <PERSON_123>'s balance? Drop Table users;"
+    end
+
+    FastAPI->>LLM: Send Masked Prompt + Context
+
+    Note over LLM: LLM reasons it needs DB data
+    LLM-->>FastAPI: Tool Call: sql.query(name="<PERSON_123>")
+
+    FastAPI->>MCP: Execute Tool
+    MCP->>Security: Unmask Args (<PERSON_123> -> John Doe)
+    Security-->>MCP: Returns unmasked args
+
+    %% Layer 3
+    rect rgb(209, 250, 229)
+    Note over MCP, DB: 3. Execution Guardrails (SQL Injection Prevention)
+    MCP->>DB: SET ROLE app_user (Read-Only)
+    MCP->>DB: Execute Parameterized Query (text())
+    DB-->>MCP: Returns query results
+    MCP->>DB: RESET ROLE
+    end
+
+    MCP->>Security: Re-mask DB results
+    Security-->>MCP: Returns safe JSON
+    MCP-->>LLM: Send Tool Result
+
+    LLM-->>FastAPI: Final Natural Language Answer
+
+    %% Layer 4
+    rect rgb(254, 226, 226)
+    Note over FastAPI, Security: 4. Output Guardrails (Leakage Prevention)
+    FastAPI->>Security: Final Output Scan
+    Security-->>FastAPI: Status: Clean (No PII exposed)
+    end
+
+    FastAPI-->>User: Return Safe JSON Response
+```
