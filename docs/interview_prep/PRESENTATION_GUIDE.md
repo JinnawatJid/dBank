@@ -224,9 +224,26 @@
             ```
 
 *   **4. Security Guardrails & Tool Execution:**
-    *   "สุดท้าย เมื่อ Tool จาก MCP Server วิ่งไปดึงข้อมูลจาก Database ที่เตรียมไว้ ผมตั้งกฎเหล็ก (Guardrails) ไว้เลยว่า การคิวรีทุกครั้งต้องเป็นแบบ **'Read-Only SQL'** เท่านั้น และข้อมูล PII ต่างๆ จะต้องถูก Masking ตั้งแต่ชั้น FastAPI ก่อนที่ข้อมูลจะหลุดไปถึง LLM ครับ"
+    *   **เราทำยังไง?** เราสร้างระบบดักจับและเปลี่ยนชื่อ PII (เช่น John Doe เป็น `<PERSON_123>`) ที่ชั้น FastAPI ก่อนส่งให้ AI และบังคับให้การรัน SQL ทุกครั้งต้องใช้ Role แบบ Read-only พร้อมกับทำ Parameterized Query เพื่อกัน SQL Injection 100% ครับ
+    *   **โค้ด/โฟลเดอร์ที่เกี่ยวข้อง:** ไฟล์ `backend/api/routes.py` (เรื่อง PII) และ `backend/mcp_tools.py` (เรื่องคิวรี SQL)
+    *   **อธิบายตอนสัมภาษณ์:** "ส่วนสุดท้ายที่ขาดไม่ได้เลยคือ Security Guardrails ครับ ในระบบนี้ผมตั้งกฎเหล็กไว้ 2 ชั้น
+    ชั้นแรกคือ **PII Masking** ทันทีที่ FastAPI ได้รับคำถาม มันจะเปลี่ยนข้อมูลส่วนตัวของลูกค้าให้กลายเป็น Token เช่น `<PERSON_123>` ทันที Google AI จะไม่มีวันได้เห็นชื่อจริงๆ ของลูกค้าเลยครับ
+    และชั้นที่สองคือ **Tool Execution** เมื่อ AI สั่งรันคำสั่ง `sql.query` โค้ดของผมจะบังคับเปลี่ยน Role ของ Database ให้เป็น `app_user` ซึ่งมีสิทธิ์แค่ Read-Only เท่านั้น และใช้ท่า Parameterized query เพื่อปิดประตูความเสี่ยงเรื่อง SQL Injection ทุกรูปแบบครับ"
+    *   **ตัวอย่างโค้ดที่สำคัญ (SQL Execution):**
+        ```python
+        # ตัวอย่าง backend/mcp_tools.py
+        def sql_query(input_data: SQLQueryInput) -> Dict[str, Any]:
+            # 1. บังคับเปลี่ยน Role เป็น Read-Only (Defense-in-depth)
+            session.execute(text(f"SET ROLE {settings.APP_USER}; SET search_path TO marts, raw, public;"))
 
-*   **Conclusion:** "สรุปก็คือ Architecture ตัวนี้ทำงานประสานกันตั้งแต่ Data Pipeline ขึ้นไปจนถึง UI โดยมี RAG และ MCP เป็นหัวใจหลักในการหาคำตอบ ภายใต้ Security Guardrails ที่รัดกุมครับ"
+            # 2. รันคำสั่งด้วย Parameterized Query เพื่อกัน SQL Injection
+            result = session.execute(text(input_data.template), input_data.params)
+
+            # 3. คืน Role เดิม
+            session.execute(text("RESET ROLE;"))
+        ```
+
+*   **Conclusion:** "สรุปก็คือ Architecture ตัวนี้ทำงานประสานกันตั้งแต่ Data Pipeline ขึ้นไปจนถึง UI โดยมี RAG และ MCP เป็นหัวใจหลักในการหาคำตอบ ภายใต้ Security Guardrails แบบ Defense-in-Depth ที่รัดกุมครับ"
 
 ---
 
