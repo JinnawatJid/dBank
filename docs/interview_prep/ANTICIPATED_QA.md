@@ -28,13 +28,23 @@ This document contains expected questions from a CTO or technical panel based on
 2. ผมคอนฟิกให้ dbt คอยจับตาดูตารางลูกค้า โดยใช้ `customer_id` เป็นกุญแจ และเช็คการเปลี่ยนแปลงจากเวลา `_ingested_at`
 3. พอเราสั่งรัน `dbt snapshot` ปุ๊บ dbt จะจัดการเปรียบเทียบข้อมูลเก่ากับข้อมูลใหม่ให้เอง ถัามีการเปลี่ยนแปลง มันจะแก้ `valid_to` ของแถวเก่าให้หมดอายุ และสร้างแถวใหม่ที่เป็น `is_current = True` ให้อัตโนมัติครับ ทำให้เราได้ระบบเก็บประวัติลูกค้าที่สมบูรณ์แบบโดยไม่ต้องเขียน SQL ควบคุมเองทั้งหมดครับ"
 
-**Q4: Why did you choose dbt for this project instead of just writing SQL scripts or relying on the backend to transform data?**
+**Q4: ปัจจุบันในระบบมีไฟล์เอกสารคู่มือ (Knowledge Base) กี่ตัว และเนื้อหาข้างในเป็นเรื่องเกี่ยวกับอะไรบ้าง?**
+**Answer:** "ตอนนี้ในระบบมีเอกสาร Markdown ทั้งหมด 5 ตัวครับ ซึ่งครอบคลุมปัญหาหลักๆ ที่ Operation Support มักจะเจอ ได้แก่:
+1. **`login_issues.md`**: คู่มือแก้ปัญหาการล็อกอินเข้าแอปฯ เช่น ลืมรหัสผ่าน, ใส่รหัสผิดจนโดนล็อค, ไม่ได้รับ SMS 2FA หรือคุกกี้ค้าง
+2. **`v1.2_release_notes.md`**: สรุปอัปเดตแอปฯ เวอร์ชัน 1.2 เช่น การเพิ่มระบบ 2FA ผ่านแอป, ฟีเจอร์โอนเงินต่างประเทศแบบใหม่ (SWIFT), ระบบ Dark mode และบั๊กที่เจอบ่อยๆ (เช่น ทิกเก็ตอาจจะพุ่งเพราะแอปเวอร์ชันนี้ครับ)
+3. **`fraud_dispute_guide.md`**: คู่มือขั้นตอนการรับมือเมื่อลูกค้าแจ้งว่าโดนโกงหรือมีรายการตัดบัตรผิดปกติ (Fraud) ตั้งแต่การอายัดบัตร การเปิด Dispute ไปจนถึงระยะเวลาการสืบสวนและชดเชยเงินคืน
+4. **`hysa_details.md`**: ข้อมูลรายละเอียดบัญชีเงินฝากดอกเบี้ยสูง (High-Yield Savings Account) เช่น อัตราดอกเบี้ย 4.25% เงื่อนไขค่าธรรมเนียม และข้อจำกัดการถอนเงิน
+5. **`premium_credit_card_policy.md`**: นโยบายและสิทธิประโยชน์ของบัตรเครดิต Premium เช่น เงื่อนไขผู้สมัคร (ต้องเงินเดือน 150k+), ค่าธรรมเนียมรายปี, สิทธิประโยชน์เลานจ์สนามบิน และอัตราการได้พอยต์ครับ
+
+เอกสารทั้ง 5 ตัวนี้ถูกหั่นและแปลงเป็น Vector เก็บไว้ใน `pgvector` เพื่อให้ LLM ใช้เป็นบริบท (Context) ในการตอบคำถาม User ครับ"
+
+**Q5: Why did you choose dbt for this project instead of just writing SQL scripts or relying on the backend to transform data?**
 **Answer:** "In a corporate banking context, data integrity and modularity are paramount. I chose dbt because it treats SQL like software. It allows us to build staging and mart layers (a Star Schema) modularly, ensures idempotency, and most importantly, allows us to write built-in data tests. We need to guarantee the LLM is querying clean, validated data, not raw, messy logs."
 
-**Q5: You used PostgreSQL with `pgvector`. Why not a dedicated vector database like Pinecone or Weaviate?**
+**Q6: You used PostgreSQL with `pgvector`. Why not a dedicated vector database like Pinecone or Weaviate?**
 **Answer:** "For an MVP and often for early-stage production, minimizing infrastructure complexity is key. PostgreSQL is incredibly robust. By using the `pgvector` extension, we can keep our relational business data (like customer tables) and our vector embeddings in the exact same ecosystem. This simplifies deployment, backups, and access control. If vector scale becomes an issue (e.g., millions of dense embeddings), migrating to a specialized DB is easy, but starting with Postgres is the leanest, most reliable approach."
 
-**Q6: How do you handle schema evolution? If the database schema changes, how does the LLM know?**
+**Q7: How do you handle schema evolution? If the database schema changes, how does the LLM know?**
 **Answer:** "The MCP server is designed to allow the LLM to 'explore' the schema. Because it can execute read-only queries, a complex reasoning loop allows it to query `information_schema` to understand available tables and columns before writing its final query. However, for production, I would explicitly inject a schema summary (a data dictionary) into the LLM's system prompt or context window upon initialization to reduce token usage and API calls."
 
 ---
