@@ -18,13 +18,23 @@ This document contains expected questions from a CTO or technical panel based on
 **Answer:** "ในโปรเจกต์นี้ การทำ Cleansing พื้นฐานของเราคือการทำ **Schema Enforcement** และ **Column Selection** ครับ
 แทนที่เราจะใช้คำสั่ง `SELECT *` ดึงข้อมูลทั้งหมดจากตารางดิบ (raw) ซึ่งมีความเสี่ยงที่คอลัมน์ขยะหรือข้อมูลแปลกปลอมที่เพิ่มเข้ามาในอนาคตจะหลุดเข้ามาในระบบ เราเลือกที่จะระบุชื่อคอลัมน์แบบเจาะจง (Explicit Declaration) เพื่อกรองและดึงเฉพาะข้อมูลที่มี Business Value จริงๆ เท่านั้นไปใช้ต่อครับ นี่คือการคลีนข้อมูลขยะชั้นแรกที่ได้ผลและปลอดภัยที่สุดครับ"
 
-**Q3: Why did you choose dbt for this project instead of just writing SQL scripts or relying on the backend to transform data?**
+**Q3: เห็นใน Presentation พูดถึง SCD Type 2 ช่วยอธิบายหน่อยว่ามันคืออะไร และในระบบของเราพัฒนามันขึ้นมายังไง?**
+**Answer:** "SCD Type 2 (Slowly Changing Dimension Type 2) คือเทคนิคการเก็บ 'ประวัติการเปลี่ยนแปลง' ของข้อมูลครับ ปกติถ้าลูกค้าอัปเดตข้อมูล เช่น ย้าย Segment จาก Retail ไป Wealth ระบบทั่วไปมักจะ 'อัปเดตทับ' ข้อมูลเดิม ทำให้เราสูญเสียประวัติว่าตอนที่เขาเปิดตั๋วปัญหาเมื่อเดือนที่แล้ว เขาอยู่ Segment ไหน
+
+การทำ SCD Type 2 จะไม่ใช้วิธีอัปเดตทับครับ แต่จะเป็นการ 'เพิ่มแถวใหม่' เข้าไปแทน ทำให้ลูกค้า 1 คนมีหลายแถวได้ โดยเราจะใช้คอลัมน์ `valid_from`, `valid_to`, และ `is_current` เป็นตัวบอกว่าแถวไหนคือข้อมูล ณ ช่วงเวลาใดครับ
+
+**ในระบบของเราพัฒนายังไง:** ผมใช้ฟีเจอร์ที่เรียกว่า **dbt Snapshots** ครับ
+1. ผมสร้างไฟล์ `data/dbank_analytics/snapshots/customers_snapshot.sql`
+2. ผมคอนฟิกให้ dbt คอยจับตาดูตารางลูกค้า โดยใช้ `customer_id` เป็นกุญแจ และเช็คการเปลี่ยนแปลงจากเวลา `_ingested_at`
+3. พอเราสั่งรัน `dbt snapshot` ปุ๊บ dbt จะจัดการเปรียบเทียบข้อมูลเก่ากับข้อมูลใหม่ให้เอง ถัามีการเปลี่ยนแปลง มันจะแก้ `valid_to` ของแถวเก่าให้หมดอายุ และสร้างแถวใหม่ที่เป็น `is_current = True` ให้อัตโนมัติครับ ทำให้เราได้ระบบเก็บประวัติลูกค้าที่สมบูรณ์แบบโดยไม่ต้องเขียน SQL ควบคุมเองทั้งหมดครับ"
+
+**Q4: Why did you choose dbt for this project instead of just writing SQL scripts or relying on the backend to transform data?**
 **Answer:** "In a corporate banking context, data integrity and modularity are paramount. I chose dbt because it treats SQL like software. It allows us to build staging and mart layers (a Star Schema) modularly, ensures idempotency, and most importantly, allows us to write built-in data tests. We need to guarantee the LLM is querying clean, validated data, not raw, messy logs."
 
-**Q4: You used PostgreSQL with `pgvector`. Why not a dedicated vector database like Pinecone or Weaviate?**
+**Q5: You used PostgreSQL with `pgvector`. Why not a dedicated vector database like Pinecone or Weaviate?**
 **Answer:** "For an MVP and often for early-stage production, minimizing infrastructure complexity is key. PostgreSQL is incredibly robust. By using the `pgvector` extension, we can keep our relational business data (like customer tables) and our vector embeddings in the exact same ecosystem. This simplifies deployment, backups, and access control. If vector scale becomes an issue (e.g., millions of dense embeddings), migrating to a specialized DB is easy, but starting with Postgres is the leanest, most reliable approach."
 
-**Q5: How do you handle schema evolution? If the database schema changes, how does the LLM know?**
+**Q6: How do you handle schema evolution? If the database schema changes, how does the LLM know?**
 **Answer:** "The MCP server is designed to allow the LLM to 'explore' the schema. Because it can execute read-only queries, a complex reasoning loop allows it to query `information_schema` to understand available tables and columns before writing its final query. However, for production, I would explicitly inject a schema summary (a data dictionary) into the LLM's system prompt or context window upon initialization to reduce token usage and API calls."
 
 ---
