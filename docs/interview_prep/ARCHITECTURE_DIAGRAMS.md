@@ -8,7 +8,7 @@
 **Purpose:** Show the CTO the "Big Picture" of how the frontend, backend, database, and LLM provider interact, highlighting the security boundaries.
 
 ```mermaid
-graph TD
+graph LR
     %% Define Styles
     classDef frontend fill:#3b82f6,stroke:#1e40af,color:white,stroke-width:2px;
     classDef backend fill:#10b981,stroke:#1d4ed8,color:white,stroke-width:2px;
