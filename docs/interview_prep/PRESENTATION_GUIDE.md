@@ -91,14 +91,14 @@
     *   "โดยใน MCP Server นี้ ผมเตรียม Tool ไว้ 3 ตัวหลักๆ คือ `sql.query` (สำหรับรัน SQL เจาะจง), `kpi.top_root_causes` (สำหรับดูภาพรวม KPI), และ `kb.search` (สำหรับหาเอกสาร RAG) ครับ"
 
 *   **3. The Data Foundation (dbt & PostgreSQL):**
-    *   "ทีนี้มาดูฐานรากของระบบที่ฝั่ง Data Layer ด้านล่างกันบ้างครับ ก่อนที่ Tools พวกนี้จะทำงานได้ เราต้องมีข้อมูลที่พร้อมใช้งานก่อน ในภาพรวมคือเรามีข้อมูลดิบที่ต้องใช้ dbt แปลงให้อยู่ในรูป Star Schema และมีไฟล์เอกสารที่ต้องทำเป็น Vector"
+    *   "ทีนี้มาดูฐานรากของระบบที่ฝั่ง Data Layer ด้านล่างกันบ้างครับ ก่อนที่ Tools พวกนี้จะทำงานได้ เราต้องมีข้อมูลที่พร้อมใช้งานก่อน ในภาพรวมคือเรามีข้อมูลดิบที่ต้องใช้ dbt (ซึ่งก็คือ Tool ที่ช่วยให้เราเขียน SQL เพื่อแปลงร่างหรือทำความสะอาดข้อมูลได้แบบเป็นระบบ เหมือนเราเขียนโค้ดซอฟต์แวร์เลยครับ) แปลงให้อยู่ในรูป Star Schema และมีไฟล์เอกสารที่ต้องทำเป็น Vector"
 
     *(Note for Jinnawat: Switch to the "Data Engineering & Transformation Pipeline" diagram here.)*
 
     *   "ถ้าเราซูมดูเฉพาะ Data Pipeline จะเห็นภาพชัดขึ้นแบบนี้ครับ การทำงานจะแบ่งเป็น 2 เส้นทางหลักๆ"
     *   **"เส้นทางแรก: Structured Data (dbt)"**
         *   "เราเริ่มจากไฟล์ CSV (Customers, Tickets) โดยผมเขียน Python Init Script โหลดข้อมูลดิบพวกนี้เข้าไปเก็บใน PostgreSQL ที่ schema ชื่อ `raw` ครับ ซึ่ง schema นี้ AI จะไม่มีสิทธิ์เข้าถึงเด็ดขาด"
-        *   "จากนั้น พระเอกของเราคือ **dbt (Data Build Tool)** จะเข้ามารับช่วงต่อ มันจะดึงข้อมูลจาก `raw` ไปทำ Data Cleansing, Transformation, และรัน Data Tests ต่างๆ จนสุดท้ายได้ออกมาเป็นตารางแบบ **Star Schema** (Fact & Dimension tables) ไปเก็บไว้ที่ schema `marts` ซึ่งนี่คือที่ๆ ข้อมูลสะอาดและพร้อมให้ MCP Tool (อย่าง `sql.query`) เข้ามาคิวรีดึงข้อมูลไปใช้ครับ"
+        *   "จากนั้น พระเอกของเราคือ **dbt (Data Build Tool)** จะเข้ามารับช่วงต่อ มันจะดึงข้อมูลจาก `raw` ไปทำ Data Cleansing, Transformation, และรัน Data Tests เพื่อเช็คว่าไม่มีข้อมูลแปลกปลอมหลุดมา จนสุดท้ายได้ออกมาเป็นตารางแบบ **Star Schema** (Fact & Dimension tables) ไปเก็บไว้ที่ schema `marts` ซึ่งนี่คือที่ๆ ข้อมูลสะอาดและพร้อมให้ MCP Tool (อย่าง `sql.query`) เข้ามาคิวรีดึงข้อมูลไปใช้ครับ"
     *   **"เส้นทางที่สอง: Unstructured Data (pgvector)"**
         *   "สำหรับพวกเอกสารคู่มือที่เป็นไฟล์ Markdown ผมเขียน Python Embedder Script เพื่อใช้ Google AI แปลงข้อความเป็นตัวเลข (Vector) แล้วเอาไปยัดใส่ตาราง `kb_embeddings` โดยใช้ Extension **pgvector** ครับ ทำให้ RAG ของเราสามารถค้นหาเอกสารที่มีเนื้อหาคล้ายเคียงกับคำถามของ User ได้"
 
