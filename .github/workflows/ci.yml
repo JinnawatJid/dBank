@@ -14,6 +14,7 @@ jobs:
       postgres:
         image: pgvector/pgvector:pg15
         env:
+          PGUSER: dbank_admin
           POSTGRES_USER: dbank_admin
           POSTGRES_PASSWORD: secure_admin_password_here
           POSTGRES_DB: dbank_analytics
@@ -41,6 +42,7 @@ jobs:
 
     - name: Initialize Database Users and Permissions
       env:
+        PGUSER: dbank_admin
         POSTGRES_USER: dbank_admin
         POSTGRES_PASSWORD: secure_admin_password_here
         POSTGRES_DB: dbank_analytics
@@ -49,6 +51,8 @@ jobs:
         APP_USER: dbank_app
         APP_PASSWORD: secure_app_password_here
         PGPASSWORD: secure_admin_password_here
+        PGHOST: 127.0.0.1
+        PGUSER: dbank_admin
         POSTGRES_HOST: 127.0.0.1
         PGHOST: 127.0.0.1
       run: |
@@ -59,10 +63,12 @@ jobs:
 
     - name: Generate mock data
       env:
+        PGUSER: dbank_admin
         POSTGRES_USER: dbank_admin
         POSTGRES_PASSWORD: secure_admin_password_here
         POSTGRES_DB: dbank_analytics
         POSTGRES_HOST: 127.0.0.1
+        PGHOST: 127.0.0.1
         POSTGRES_PORT: 5432
         DBT_USER: dbank_dbt
         DBT_PASSWORD: secure_dbt_password_here
@@ -71,6 +77,7 @@ jobs:
 
     - name: Embed Knowledge Base
       env:
+        PGUSER: dbank_admin
         POSTGRES_USER: dbank_admin
         POSTGRES_PASSWORD: secure_admin_password_here
         POSTGRES_DB: dbank_analytics
@@ -98,6 +105,7 @@ jobs:
     - name: Run Backend Pytest (Unit & Integration)
       env:
         PYTHONPATH: ${{ github.workspace }}
+        PGUSER: dbank_admin
         POSTGRES_USER: dbank_admin
         POSTGRES_PASSWORD: secure_admin_password_here
         POSTGRES_DB: dbank_analytics
